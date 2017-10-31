@@ -1,0 +1,60 @@
+{
+  "name": "verificator",
+  "version": "0.0.1",
+  "description": "Client-side and server-side javascript validator library",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "webpack --hide-modules --progress",
+    "watch": "webpack --watch --hide-modules --progress",
+    "test": "jest",
+    "cover": "jest --coverage"
+  },
+  "author": "Nikita Stenin <stenin.nikita@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/date-fns": "^2.6.0",
+    "@types/deepmerge": "^1.3.2",
+    "@types/jest": "^21.1.5",
+    "@types/validator": "^6.3.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "date-fns": "^2.0.0-alpha.7",
+    "deepmerge": "^2.0.0",
+    "jest": "^21.2.1",
+    "ts-jest": "^21.1.4",
+    "ts-loader": "^2.3.4",
+    "typescript": "^2.5.2",
+    "validator": "^9.1.1",
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.7.1"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "useBabelrc": true
+      }
+    },
+    "cacheDirectory": "/tmp/verificator",
+    "verbose": true,
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
+    "testMatch": [
+      "**/tests/**/*.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/rules/index.ts",
+      "!src/index.ts"
+    ]
+  }
+}

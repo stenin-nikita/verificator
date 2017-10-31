@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+    node:
+        build:
+            context: ./docker/node
+        image: docker.bspu.ru/stenin/elschool/node:0.1
+        working_dir: /var/www/validator
+        expose:
+            - "8000"
+        ports:
+            - "8000:8000"
+        volumes:
+            - "./:/var/www/validator"
+        tty: true

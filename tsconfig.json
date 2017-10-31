@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "declaration": false,
+    "stripInternal": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "module": "es2015",
+    "target": "es2015",
+    "lib": ["es2015", "es2016.array.include", "dom"],
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": "./dist",
+    "allowSyntheticDefaultImports": true
+  },
+  "files": [
+    "./src/index.ts"
+  ]
+}
