@@ -1,5 +1,11 @@
+import isValid from 'date-fns/isValid'
+
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
-    throw new TypeError('Rule is not implemented')
+    if (typeof value === 'boolean') {
+        return false
+    }
+
+    return isValid(value)
 }
 
 export default validate
