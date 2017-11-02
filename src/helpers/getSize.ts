@@ -13,7 +13,7 @@ const getSize = (attribute: string, value: any, validator: any): number => {
         return file.size / 1024
     }
 
-    return value.length
+    return String(value).length
 }
 
 export default getSize

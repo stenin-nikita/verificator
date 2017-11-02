@@ -3,10 +3,9 @@ import validate from '../../src/rules/date_format'
 const positive = [
     ['2000-01-01', 'YYYY-MM-DD'],
     ['2013-02', 'YYYY-MM'],
-    ['2000-01-01T00:00:00+00:00', 'YYYY-MM-DD\THH:mm:ssZ'],
-    ['2000-01-01T00:00:00+0000', 'YYYY-MM-DD\THH:mm:ssZZ'],
-    // ['2000-01-01T00:00:00Atlantic/Azores', 'YYYY-MM-DD\THH:mm:sse'],
-    // ['2000-01-01T00:00:00Z', 'YYYY-MM-DD\THH:mm:ssT'],
+    ['2000-01-01T00:00:00+00:00', 'YYYY-MM-DD[T]HH:mm:ssZ'],
+    ['2000-01-01T00:00:00+0000', 'YYYY-MM-DD[T]HH:mm:ssZZ'],
+    ['2000-01-01T00:00:00Z', 'YYYY-MM-DD[T]HH:mm:ss[Z]'],
     ['2000-01-01 17:43:59', 'YYYY-MM-DD HH:mm:ss'],
     ['17:43:59', 'HH:mm:ss'],
     ['17:43', 'HH:mm']

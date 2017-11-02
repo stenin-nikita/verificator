@@ -3,15 +3,20 @@ import isValid from 'date-fns/isValid'
 import toDate from 'date-fns/toDate'
 
 const compareDates = (attribute: string, value: any, [ date ]: any[], operator: string, validator: any): boolean => {
-    if (typeof value !== 'string' || !isValid(value)) {
-        return false
+    if (value instanceof Date || typeof value == 'string' || typeof value == 'number') {
+        if (!isValid(value)) {
+            return false
+        }
+
+        // TODO get rule date_format
+        // let format = getDateFormat(attribute, validator)
+        let first = toDate(value)
+        let second = toDate(date)
+
+        return compare(Number(first), Number(second), operator)
     }
 
-    // let format = getDateFormat(attribute, validator)
-    let first = toDate(value)
-    let second = toDate(date)
-
-    return compare(Number(first), Number(second), operator)
+    return false
 }
 
 const compare = (first: number, second: number, operator: string) => {
