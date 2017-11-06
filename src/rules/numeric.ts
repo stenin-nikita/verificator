@@ -1,5 +1,7 @@
+import isNumeric from '../helpers/isNumeric'
+
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
-    return /^[0-9]+$/.test(String(value))
+    return isNumeric(value)
 }
 
 export default validate

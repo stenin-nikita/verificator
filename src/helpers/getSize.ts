@@ -1,10 +1,11 @@
 import isFile from './isFile'
+import isNumeric from '../helpers/isNumeric'
 
 const getSize = (attribute: string, value: any, validator: any): number => {
     const hasNumeric = validator.hasRule(attribute, ['numeric', 'integer'])
 
-    if (typeof value == 'number' && hasNumeric) {
-        return value
+    if (isNumeric(value) && hasNumeric) {
+        return Number(value)
     } else if (Array.isArray(value)) {
         return value.length
     } else if (isFile(value)) {

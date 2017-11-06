@@ -23,6 +23,11 @@ const dependentRules = [
     'before_or_equal', 'after_or_equal',
 ]
 
+const implicitRules = [
+    'required', 'filled', 'required_with', 'required_with_all', 'required_without',
+    'required_without_all', 'required_if', 'required_unless', 'accepted', 'present',
+]
+
 export default class Validator implements ValidatorInterface {
     protected _data: ValidationData
 
@@ -129,6 +134,16 @@ export default class Validator implements ValidatorInterface {
         return this._errors
     }
 
+    getPrimaryAttribute(attribute: string): string {
+        for(let unparsed of Object.keys(this._implicitAttributes)) {
+            if (this._implicitAttributes[unparsed].indexOf(attribute) > -1) {
+                return unparsed
+            }
+        }
+    
+        return attribute
+    }
+
     static make(data: ValidationData, rules: InputRules, translator: any): Validator {
         return new Validator(data, rules, translator)
     }
@@ -172,7 +187,7 @@ export default class Validator implements ValidatorInterface {
             newData = []
     
             data.forEach(value => newData.push(this._parseData(value)))
-        } else if (isFile(data)) {
+        } else if (isFile(data) || (/string|number|boolean/).test(typeof data)) {
             return data
         } else {
             newData = {}
@@ -201,8 +216,8 @@ export default class Validator implements ValidatorInterface {
     }
 
     protected _getExplicitKeys(attribute: string): string[] {
-        const pattern = escapeString(this._getPrimaryAttribute(attribute))
-            .replace('\\*', '([^\.]+)')
+        const pattern = escapeString(this.getPrimaryAttribute(attribute))
+            .replace(/\\\*/g, '([^\.]+)')
         const regex = new RegExp(`^${pattern}`)
         const match = regex.exec(attribute)
     
@@ -213,16 +228,6 @@ export default class Validator implements ValidatorInterface {
         }
     
         return []
-    }
-
-    protected _getPrimaryAttribute(attribute: string): string {
-        for(let unparsed of Object.keys(this._implicitAttributes)) {
-            if (this._implicitAttributes[unparsed].indexOf(attribute) > -1) {
-                return unparsed
-            }
-        }
-    
-        return attribute
     }
 
     protected _replaceAsterisksInParameters(parameters: string[], keys: string[]): string[] {
@@ -250,7 +255,7 @@ export default class Validator implements ValidatorInterface {
     }
 
     protected _getDisplayableAttribute(attribute: string): string {
-        const primaryAttribute = this._getPrimaryAttribute(attribute)
+        const primaryAttribute = this.getPrimaryAttribute(attribute)
         const expectedAttributes = attribute != primaryAttribute ? [attribute, primaryAttribute] : [attribute]
 
         for(let name of expectedAttributes) {
@@ -287,4 +292,37 @@ export default class Validator implements ValidatorInterface {
 
         return 'string'
     }
+
+    // protected _isValidatable(rule: string, attribute: string, value: any): boolean {
+    //     return this._presentOrRuleIsImplicit(rule, attribute, value) &&
+    //            this._passesOptionalCheck(attribute) &&
+    //            this._isNotNullIfMarkedAsNullable(rule, attribute)
+    // }
+
+    // protected _presentOrRuleIsImplicit(rule: string, attribute: string, value: any): boolean {
+    //     if (typeof value === 'string' && value.trim() === '') {
+    //         return implicitRules.indexOf(rule) > -1
+    //     }
+
+    //     return RULES.present(attribute, value, [], this) || implicitRules.indexOf(rule) > -1
+    // }
+
+    // protected _isNotNullIfMarkedAsNullable(rule: string, attribute: string): boolean {
+    //     if (implicitRules.indexOf(rule) > -1 || !this.hasRule(attribute, ['nullable'])) {
+    //         return true
+    //     }
+        
+    //     return dataGet(this._data, attribute, 0) != null
+    // }
+
+    // protected _passesOptionalCheck(attribute: string): boolean {
+    //     if (!this.hasRule(attribute, ['sometimes'])) {
+    //         return true
+    //     }
+        
+    //     return false
+    //     // $data = ValidationData::initializeAndGatherData($attribute, $this->data);
+        
+    //     // return array_key_exists($attribute, $data) || in_array($attribute, array_keys($this->data));
+    // }
 }

@@ -53,10 +53,16 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         const path = attribute.substr(0, attribute.indexOf('*') - 1)
         const value = dataGet(this.data, path)
     
-        if (value && Array.isArray(value)) {
-            value.forEach((v, i) => {
-                this._explodeRules(attribute.replace('*', String(i)), rule)
-            })
+        if (value) {
+            if (Array.isArray(value)) {
+                value.forEach((v, i) => {
+                    this._explodeRules(attribute.replace('*', String(i)), rule)
+                })
+            } else if (Object.prototype.toString.call(value) === '[object Object]') {
+                Object.keys(value).forEach(key => {
+                    this._explodeRules(attribute.replace('*', key), rule)
+                })
+            }
         }
     }
 

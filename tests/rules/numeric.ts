@@ -13,8 +13,6 @@ const negative = [
     true,
     false,
     {},
-    '+123',
-    '-123'
 ]
 
 test('numeric positive', () => {
