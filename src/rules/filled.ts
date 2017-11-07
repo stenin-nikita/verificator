@@ -1,9 +1,9 @@
 import required from './required'
+import dataGet from '../helpers/dataGet'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
-    // TODO
-    if (validator.hasAttribute(attribute)) {
-        return required(attribute, value, parameters, validator)
+    if (dataGet(validator.getData(), attribute, '__MISSING__') !== '__MISSING__') {
+        return required(attribute, value, [], validator)
     }
 
     return true

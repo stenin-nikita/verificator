@@ -1,7 +1,8 @@
 const path = require('path')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
-    devtool: 'cheap-module-source-map',
+    devtool: 'source-map',
 
     entry: './src/index.ts',
 
@@ -35,6 +36,21 @@ module.exports = {
             }
         ]
     },
+
+    plugins: [
+        new UglifyJsPlugin({
+            uglifyOptions: {
+                compress: {
+                    comparisons: false
+                },
+                output: {
+                    comments: false,
+                    ascii_only: true,
+                },
+                warnings: false
+            }
+        })
+    ],
 
     devServer: {
         host: 'localhost',

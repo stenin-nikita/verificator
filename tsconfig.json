@@ -15,7 +15,8 @@
     "sourceMap": true,
     "inlineSources": true,
     "outDir": "./dist",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "charset": "utf8"
   },
   "files": [
     "./src/index.ts"

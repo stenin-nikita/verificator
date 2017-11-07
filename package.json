@@ -29,6 +29,7 @@
     "ts-jest": "^21.1.4",
     "ts-loader": "^2.3.4",
     "typescript": "^2.5.2",
+    "uglifyjs-webpack-plugin": "^1.0.1",
     "validator": "^9.1.1",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.7.1"
@@ -40,7 +41,7 @@
       }
     },
     "cacheDirectory": "/tmp/verificator",
-    "verbose": true,
+    "verbose": false,
     "transform": {
       "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },

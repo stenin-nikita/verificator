@@ -27,6 +27,38 @@ test('alternative format', () => {
     })
 })
 
+test('validate nullable', () => {
+    const promises = [
+        validator({}, { name: 'nullable' }),
+        validator({ 'name': undefined, { name: 'nullable' }),
+        validator({ 'name': null, { name: 'nullable' }),
+        validator({ 'name': true, { name: 'nullable' }),
+        validator({ 'name': false, { name: 'nullable' }),
+        validator({ 'name': 0, { name: 'nullable' }),
+        validator({ 'name': 1, { name: 'nullable' }),
+        validator({ 'name': '0', { name: 'nullable' }),
+        validator({ 'name': '1', { name: 'nullable' }),
+        validator({ 'name': 'test', { name: 'nullable' }),
+        validator({ 'name': [], { name: 'nullable' }),
+        validator({ 'name': {}, { name: 'nullable' }),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(true)
+        expect(result[3]).toBe(true)
+        expect(result[4]).toBe(true)
+        expect(result[5]).toBe(true)
+        expect(result[6]).toBe(true)
+        expect(result[7]).toBe(true)
+        expect(result[8]).toBe(true)
+        expect(result[9]).toBe(true)
+        expect(result[10]).toBe(true)
+        expect(result[11]).toBe(true)
+    })
+})
+
 test('validate present', () => {
     const promises = [
         validator({}, { name: 'present' }),
@@ -323,11 +355,53 @@ test('validate string', () => {
     const promises = [
         validator({'x': 'aslsdlks'}, {'x': 'string'}),
         validator({'x': {'blah': 'test'}}, {'x': 'string'}),
+        validator({'x': undefined}, {'x': 'string'}),
+        validator({'x': null}, {'x': 'string'}),
+        validator({'x': true}, {'x': 'string'}),
+        validator({'x': false}, {'x': 'string'}),
+        validator({'x': 0}, {'x': 'string'}),
+        validator({'x': 1}, {'x': 'string'}),
+        validator({'x': []}, {'x': 'string'}),
     ]
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
         expect(result[1]).toBe(false)
+        expect(result[2]).toBe(false)
+        expect(result[3]).toBe(false)
+        expect(result[4]).toBe(false)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(false)
+        expect(result[8]).toBe(false)
+    })
+})
+
+test('validate string', () => {
+    const promises = [
+        validator({'x': []}, {'x': 'array'}),
+        validator({'x': undefined, {'x': 'array'}),
+        validator({'x': null, {'x': 'array'}),
+        validator({'x': true, {'x': 'array'}),
+        validator({'x': false, {'x': 'array'}),
+        validator({'x': 1, {'x': 'array'}),
+        validator({'x': 0, {'x': 'array'}),
+        validator({'x': '', {'x': 'array'}),
+        validator({'x': 'test', {'x': 'array'}),
+        validator({'x': {}, {'x': 'array'}),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(false)
+        expect(result[2]).toBe(false)
+        expect(result[3]).toBe(false)
+        expect(result[4]).toBe(false)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(false)
+        expect(result[8]).toBe(false)
+        expect(result[9]).toBe(false)
     })
 })
 
@@ -381,6 +455,13 @@ test('validate numeric', () => {
         validator({'foo': '1.23'}, {'foo': 'numeric'}),
         validator({'foo': '-1'}, {'foo': 'numeric'}),
         validator({'foo': '1'}, {'foo': 'numeric'}),
+        validator({'foo': 'a'}, {'foo': 'numeric'}),
+        validator({'foo': '1234567a89'}, {'foo': 'numeric'}),
+        validator({'foo': null}, {'foo': 'numeric'}),
+        validator({'foo': undefined}, {'foo': 'numeric'}),
+        validator({'foo': true}, {'foo': 'numeric'}),
+        validator({'foo': false}, {'foo': 'numeric'}),
+        validator({'foo': {}}, {'foo': 'numeric'}),
     ]
 
     return Promise.all(promises).then(result => {
@@ -388,6 +469,13 @@ test('validate numeric', () => {
         expect(result[1]).toBe(true)
         expect(result[2]).toBe(true)
         expect(result[3]).toBe(true)
+        expect(result[4]).toBe(false)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(false)
+        expect(result[8]).toBe(false)
+        expect(result[9]).toBe(false)
+        expect(result[10]).toBe(false)
     })
 })
 
@@ -397,6 +485,20 @@ test('validate integer', () => {
         validator({'foo': '1.23'}, {'foo': 'integer'}),
         validator({'foo': '-1'}, {'foo': 'integer'}),
         validator({'foo': '1'}, {'foo': 'integer'}),
+        validator({'foo': '1234567890'}, {'foo': 'integer'}),
+        validator({'foo': 123}, {'foo': 'integer'}),
+        validator({'foo': -123}, {'foo': 'integer'}),
+        validator({'foo': '-123'}, {'foo': 'integer'}),
+        validator({'foo': 'a'}, {'foo': 'integer'}),
+        validator({'foo': '1234567a89'}, {'foo': 'integer'}),
+        validator({'foo': null}, {'foo': 'integer'}),
+        validator({'foo': undefined}, {'foo': 'integer'}),
+        validator({'foo': true}, {'foo': 'integer'}),
+        validator({'foo': false}, {'foo': 'integer'}),
+        validator({'foo': {}}, {'foo': 'integer'}),
+        validator({'foo': '+123'}, {'foo': 'integer'}),
+        validator({'foo': 12.2}, {'foo': 'integer'}),
+        validator({'foo': '13.3'}, {'foo': 'integer'}),
     ]
 
     return Promise.all(promises).then(result => {
@@ -404,6 +506,20 @@ test('validate integer', () => {
         expect(result[1]).toBe(false)
         expect(result[2]).toBe(true)
         expect(result[3]).toBe(true)
+        expect(result[4]).toBe(true)
+        expect(result[5]).toBe(true)
+        expect(result[6]).toBe(true)
+        expect(result[7]).toBe(true)
+        expect(result[8]).toBe(false)
+        expect(result[9]).toBe(false)
+        expect(result[10]).toBe(false)
+        expect(result[11]).toBe(false)
+        expect(result[12]).toBe(false)
+        expect(result[13]).toBe(false)
+        expect(result[14]).toBe(false)
+        expect(result[15]).toBe(false)
+        expect(result[16]).toBe(false)
+        expect(result[17]).toBe(false)
     })
 })
 
@@ -597,7 +713,36 @@ test('validate ip', () => {
         validator({'ip': '::1'}, {'ip': 'ipv6'}),
         validator({'ip': '127.0.0.1'}, {'ip': 'ipv6'}),
         validator({'ip': '::1'}, {'ip': 'ipv4'}),
+        validator({'ip': '192.168.1.1'}, {'ip': 'ip'}),
+        validator({'ip': '255.255.255.255'}, {'ip': 'ip'}),
+        validator({'ip': '0.0.0.0'}, {'ip': 'ip'}),
+        validator({'ip': '::1'}, {'ip': 'ip'}),
+        validator({'ip': '2001:db8:0000:1:1:1:1:1'}, {'ip': 'ip'}),
+        validator({'ip': '::ffff:127.0.0.1'}, {'ip': 'ip'}),
+        validator({'ip': '192.168.a.1',}, {'ip': 'ip'}),
+        validator({'ip': '255.255.255.256',}, {'ip': 'ip'}),
+        validator({'ip': '23.a.f.234',}, {'ip': 'ip'}),
+        validator({'ip': '::ffff:287.0.0.1',}, {'ip': 'ip'}),
+        validator({'ip': '192.168.1.1'}, {'ip': 'ipv4'}),
+        validator({'ip': '255.255.255.255'}, {'ip': 'ipv4'}),
+        validator({'ip': '0.0.0.0'}, {'ip': 'ipv4'}),
+        validator({'ip': '2001:db8:0000:1:1:1:1:1'}, {'ip': 'ipv4'}),
+        validator({'ip': '::ffff:127.0.0.1'}, {'ip': 'ipv4'}),
+        validator({'ip': '192.168.a.1'}, {'ip': 'ipv4'}),
+        validator({'ip': '255.255.255.256'}, {'ip': 'ipv4'}),
+        validator({'ip': '23.a.f.234'}, {'ip': 'ipv4'}),
+        validator({'ip': '::ffff:287.0.0.1'}, {'ip': 'ipv4'}),
+        validator({'ip': '2001:db8:0000:1:1:1:1:1'}, {'ip': 'ipv6'}),
+        validator({'ip': '::ffff:127.0.0.1'}, {'ip': 'ipv6'}),
+        validator({'ip': '192.168.a.1'}, {'ip': 'ipv6'}),
+        validator({'ip': '255.255.255.256'}, {'ip': 'ipv6'}),
+        validator({'ip': '23.a.f.234'}, {'ip': 'ipv6'}),
+        validator({'ip': '192.168.1.1'}, {'ip': 'ipv6'}),
+        validator({'ip': '255.255.255.255'}, {'ip': 'ipv6'}),
+        validator({'ip': '0.0.0.0'}, {'ip': 'ipv6'}),
+        validator({'ip': '::ffff:287.0.0.1'}, {'ip': 'ipv6'}),
     ]
+
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(false)
@@ -606,18 +751,78 @@ test('validate ip', () => {
         expect(result[3]).toBe(true)
         expect(result[4]).toBe(false)
         expect(result[5]).toBe(false)
+        expect(result[6]).toBe(true)
+        expect(result[7]).toBe(true)
+        expect(result[8]).toBe(true)
+        expect(result[9]).toBe(true)
+        expect(result[10]).toBe(true)
+        expect(result[11]).toBe(true)
+        expect(result[12]).toBe(false)
+        expect(result[13]).toBe(false)
+        expect(result[14]).toBe(false)
+        expect(result[15]).toBe(false)
+        expect(result[16]).toBe(true)
+        expect(result[17]).toBe(true)
+        expect(result[18]).toBe(true)
+        expect(result[19]).toBe(false)
+        expect(result[20]).toBe(false)
+        expect(result[21]).toBe(false)
+        expect(result[22]).toBe(false)
+        expect(result[23]).toBe(false)
+        expect(result[24]).toBe(false)
+        expect(result[25]).toBe(true)
+        expect(result[26]).toBe(true)
+        expect(result[27]).toBe(false)
+        expect(result[28]).toBe(false)
+        expect(result[29]).toBe(false)
+        expect(result[30]).toBe(false)
+        expect(result[31]).toBe(false)
+        expect(result[32]).toBe(false)
+        expect(result[33]).toBe(false)
     })
 })
 
 test('validate email', () => {
     const promises = [
         validator({'x': 'aslsdlks'}, {'x': 'email'}),
+        validator({'x': '@example.com'}, {'x': 'email'}),
+        validator({'x': '@example'}, {'x': 'email'}),
+        validator({'x': undefined}, {'x': 'email'}),
+        validator({'x': null}, {'x': 'email'}),
+        validator({'x': 'undefined'}, {'x': 'email'}),
+        validator({'x': 'null'}, {'x': 'email'}),
+        validator({'x': 'someone@example.c'}, {'x': 'email'}),
+        validator({'x': true}, {'x': 'email'}),
+        validator({'x': false}, {'x': 'email'}),
         validator({'x': 'foo@gmail.com'}, {'x': 'email'}),
+        validator({'x': 'someone@example.com'}, {'x': 'email'}),
+        validator({'x': 'someone@example.co'}, {'x': 'email'}),
+        validator({'x': 'someone123@example.co.uk'}, {'x': 'email'}),
+        validator({'x': 'Pelé@example.com'}, {'x': 'email'}),
+        validator({'x': 'very.common@example.com'}, {'x': 'email'}),
+        validator({'x': 'other.email-with-dash@example.com'}, {'x': 'email'}),
+        validator({'x': 'disposable.style.email.with+symbol@example.com'}, {'x': 'email'}),
     ]
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(false)
-        expect(result[1]).toBe(true)
+        expect(result[1]).toBe(false)
+        expect(result[2]).toBe(false)
+        expect(result[3]).toBe(false)
+        expect(result[4]).toBe(false)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(false)
+        expect(result[8]).toBe(false)
+        expect(result[9]).toBe(false)
+        expect(result[10]).toBe(true)
+        expect(result[11]).toBe(true)
+        expect(result[12]).toBe(true)
+        expect(result[13]).toBe(true)
+        expect(result[14]).toBe(true)
+        expect(result[15]).toBe(true)
+        expect(result[16]).toBe(true)
+        expect(result[17]).toBe(true)
     })
 })
 
@@ -634,6 +839,16 @@ test('validate alpha', () => {
         validator({'x': '123'}, {'x': 'alpha'}),
         validator({'x': 123}, {'x': 'alpha'}),
         validator({'x': 'abc123'}, {'x': 'alpha'}),
+        // any locale.
+        validator({'x': 'سلام'}, {'x': 'alpha'}),
+        validator({'x': 'Привет'}, {'x': 'alpha'}),
+        // specfic locale
+        validator({'x': 'peace'}, {'x': 'alpha:ar'}),
+        validator({'x': 'peace'}, {'x': 'alpha:ru'}),
+        // non-existant locale defaults to english validation.
+        validator({'x': 'peace'}, {'x': 'alpha:blah'}),
+        // non english characters.
+        validator({'x': 'اين اشيائي'}, {'x': 'alpha:blah'}),
     ]
 
     return Promise.all(promises).then(result => {
@@ -646,6 +861,12 @@ test('validate alpha', () => {
         expect(result[6]).toBe(false)
         expect(result[7]).toBe(false)
         expect(result[8]).toBe(false)
+        expect(result[9]).toBe(true)
+        expect(result[10]).toBe(true)
+        expect(result[11]).toBe(false)
+        expect(result[12]).toBe(false)
+        expect(result[13]).toBe(true)
+        expect(result[14]).toBe(false)
     })
 })
 
@@ -654,12 +875,28 @@ test('validate alpha_num', () => {
         validator({'x': 'asls13dlks'}, {'x': 'alpha_num'}),
         validator({'x': 'http://g232oogle.com'}, {'x': 'alpha_num'}),
         validator({'x': '٧٨٩'}, {'x': 'alpha_num'}),
+        // any locale.
+        validator({'x': 'سلام12'}, {'x': 'alpha_num'}),
+        validator({'x': 'Привет12'}, {'x': 'alpha_num'}),
+        // specfic locale
+        validator({'x': 'peace'}, {'x': 'alpha_num:ar'}),
+        validator({'x': 'peace'}, {'x': 'alpha_num:ru'}),
+        // non-existant locale defaults to english validation.
+        validator({'x': 'peace'}, {'x': 'alpha_num:blah'}),
+        // non english characters.
+        validator({'x': 'اين اشيائي'}, {'x': 'alpha_num:blah'}),
     ]
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
         expect(result[1]).toBe(false)
         expect(result[2]).toBe(true)
+        expect(result[3]).toBe(true)
+        expect(result[4]).toBe(true)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(true)
+        expect(result[8]).toBe(false)
     })
 })
 
@@ -668,12 +905,28 @@ test('validate alpha_dash', () => {
         validator({'x': 'asls1-_3dlks'}, {'x': 'alpha_dash'}),
         validator({'x': 'http://-g232oogle.com'}, {'x': 'alpha_dash'}),
         validator({'x': '٧٨٩'}, {'x': 'alpha_dash'}),
+        // any locale.
+        validator({'x': 'سلا-م_'}, {'x': 'alpha_dash'}),
+        validator({'x': 'Привет_-'}, {'x': 'alpha_dash'}),
+        // specfic locale
+        validator({'x': 'peace'}, {'x': 'alpha_dash:ar'}),
+        validator({'x': 'peace'}, {'x': 'alpha_dash:ru'}),
+        // non-existant locale defaults to english validation.
+        validator({'x': 'peace'}, {'x': 'alpha_dash:blah'}),
+        // non english characters.
+        validator({'x': 'اين اشيائي'}, {'x': 'alpha_dash:blah'}),
     ]
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
         expect(result[1]).toBe(false)
         expect(result[2]).toBe(true)
+        expect(result[3]).toBe(true)
+        expect(result[4]).toBe(true)
+        expect(result[5]).toBe(false)
+        expect(result[6]).toBe(false)
+        expect(result[7]).toBe(true)
+        expect(result[8]).toBe(false)
     })
 })
 
@@ -937,230 +1190,227 @@ test('validate weak before and after', () => {
 
 test('validate url with valid url', () => {
     const urls = [
-        // 'aaa://fully.qualified.domain/path',
-        // 'aaas://fully.qualified.domain/path',
-        // 'about://fully.qualified.domain/path',
-        // 'acap://fully.qualified.domain/path',
-        // 'acct://fully.qualified.domain/path',
-        // 'acr://fully.qualified.domain/path',
-        // 'adiumxtra://fully.qualified.domain/path',
-        // 'afp://fully.qualified.domain/path',
-        // 'afs://fully.qualified.domain/path',
-        // 'aim://fully.qualified.domain/path',
-        // 'apt://fully.qualified.domain/path',
-        // 'attachment://fully.qualified.domain/path',
-        // 'aw://fully.qualified.domain/path',
-        // 'barion://fully.qualified.domain/path',
-        // 'beshare://fully.qualified.domain/path',
-        // 'bitcoin://fully.qualified.domain/path',
-        // 'blob://fully.qualified.domain/path',
-        // 'bolo://fully.qualified.domain/path',
-        // 'callto://fully.qualified.domain/path',
-        // 'cap://fully.qualified.domain/path',
-        // 'chrome://fully.qualified.domain/path',
-        // 'chrome-extension://fully.qualified.domain/path',
-        // 'cid://fully.qualified.domain/path',
-        // 'coap://fully.qualified.domain/path',
-        // 'coaps://fully.qualified.domain/path',
-        // 'com-eventbrite-attendee://fully.qualified.domain/path',
-        // 'content://fully.qualified.domain/path',
-        // 'crid://fully.qualified.domain/path',
-        // 'cvs://fully.qualified.domain/path',
-        // 'data://fully.qualified.domain/path',
-        // 'dav://fully.qualified.domain/path',
-        // 'dict://fully.qualified.domain/path',
-        // 'dlna-playcontainer://fully.qualified.domain/path',
-        // 'dlna-playsingle://fully.qualified.domain/path',
-        // 'dns://fully.qualified.domain/path',
-        // 'dntp://fully.qualified.domain/path',
-        // 'dtn://fully.qualified.domain/path',
-        // 'dvb://fully.qualified.domain/path',
-        // 'ed2k://fully.qualified.domain/path',
-        // 'example://fully.qualified.domain/path',
-        // 'facetime://fully.qualified.domain/path',
-        // 'fax://fully.qualified.domain/path',
-        // 'feed://fully.qualified.domain/path',
-        // 'feedready://fully.qualified.domain/path',
-        // 'file://fully.qualified.domain/path',
-        // 'filesystem://fully.qualified.domain/path',
-        // 'finger://fully.qualified.domain/path',
-        // 'fish://fully.qualified.domain/path',
-        // 'ftp://fully.qualified.domain/path',
-        // 'geo://fully.qualified.domain/path',
-        // 'gg://fully.qualified.domain/path',
-        // 'git://fully.qualified.domain/path',
-        // 'gizmoproject://fully.qualified.domain/path',
-        // 'go://fully.qualified.domain/path',
-        // 'gopher://fully.qualified.domain/path',
-        // 'gtalk://fully.qualified.domain/path',
-        // 'h323://fully.qualified.domain/path',
-        // 'ham://fully.qualified.domain/path',
-        // 'hcp://fully.qualified.domain/path',
-        // 'http://fully.qualified.domain/path',
-        // 'https://fully.qualified.domain/path',
-        // 'iax://fully.qualified.domain/path',
-        // 'icap://fully.qualified.domain/path',
-        // 'icon://fully.qualified.domain/path',
-        // 'im://fully.qualified.domain/path',
-        // 'imap://fully.qualified.domain/path',
-        // 'info://fully.qualified.domain/path',
-        // 'iotdisco://fully.qualified.domain/path',
-        // 'ipn://fully.qualified.domain/path',
-        // 'ipp://fully.qualified.domain/path',
-        // 'ipps://fully.qualified.domain/path',
-        // 'irc://fully.qualified.domain/path',
-        // 'irc6://fully.qualified.domain/path',
-        // 'ircs://fully.qualified.domain/path',
-        // 'iris://fully.qualified.domain/path',
-        // 'iris.beep://fully.qualified.domain/path',
-        // 'iris.lwz://fully.qualified.domain/path',
-        // 'iris.xpc://fully.qualified.domain/path',
-        // 'iris.xpcs://fully.qualified.domain/path',
-        // 'itms://fully.qualified.domain/path',
-        // 'jabber://fully.qualified.domain/path',
-        // 'jar://fully.qualified.domain/path',
-        // 'jms://fully.qualified.domain/path',
-        // 'keyparc://fully.qualified.domain/path',
-        // 'lastfm://fully.qualified.domain/path',
-        // 'ldap://fully.qualified.domain/path',
-        // 'ldaps://fully.qualified.domain/path',
-        // 'magnet://fully.qualified.domain/path',
-        // 'mailserver://fully.qualified.domain/path',
-        // 'mailto://fully.qualified.domain/path',
-        // 'maps://fully.qualified.domain/path',
-        // 'market://fully.qualified.domain/path',
-        // 'message://fully.qualified.domain/path',
-        // 'mid://fully.qualified.domain/path',
-        // 'mms://fully.qualified.domain/path',
-        // 'modem://fully.qualified.domain/path',
-        // 'ms-help://fully.qualified.domain/path',
-        // 'ms-settings://fully.qualified.domain/path',
-        // 'ms-settings-airplanemode://fully.qualified.domain/path',
-        // 'ms-settings-bluetooth://fully.qualified.domain/path',
-        // 'ms-settings-camera://fully.qualified.domain/path',
-        // 'ms-settings-cellular://fully.qualified.domain/path',
-        // 'ms-settings-cloudstorage://fully.qualified.domain/path',
-        // 'ms-settings-emailandaccounts://fully.qualified.domain/path',
-        // 'ms-settings-language://fully.qualified.domain/path',
-        // 'ms-settings-location://fully.qualified.domain/path',
-        // 'ms-settings-lock://fully.qualified.domain/path',
-        // 'ms-settings-nfctransactions://fully.qualified.domain/path',
-        // 'ms-settings-notifications://fully.qualified.domain/path',
-        // 'ms-settings-power://fully.qualified.domain/path',
-        // 'ms-settings-privacy://fully.qualified.domain/path',
-        // 'ms-settings-proximity://fully.qualified.domain/path',
-        // 'ms-settings-screenrotation://fully.qualified.domain/path',
-        // 'ms-settings-wifi://fully.qualified.domain/path',
-        // 'ms-settings-workplace://fully.qualified.domain/path',
-        // 'msnim://fully.qualified.domain/path',
-        // 'msrp://fully.qualified.domain/path',
-        // 'msrps://fully.qualified.domain/path',
-        // 'mtqp://fully.qualified.domain/path',
-        // 'mumble://fully.qualified.domain/path',
-        // 'mupdate://fully.qualified.domain/path',
-        // 'mvn://fully.qualified.domain/path',
-        // 'news://fully.qualified.domain/path',
-        // 'nfs://fully.qualified.domain/path',
-        // 'ni://fully.qualified.domain/path',
-        // 'nih://fully.qualified.domain/path',
-        // 'nntp://fully.qualified.domain/path',
-        // 'notes://fully.qualified.domain/path',
-        // 'oid://fully.qualified.domain/path',
-        // 'opaquelocktoken://fully.qualified.domain/path',
-        // 'pack://fully.qualified.domain/path',
-        // 'palm://fully.qualified.domain/path',
-        // 'paparazzi://fully.qualified.domain/path',
-        // 'pkcs11://fully.qualified.domain/path',
-        // 'platform://fully.qualified.domain/path',
-        // 'pop://fully.qualified.domain/path',
-        // 'pres://fully.qualified.domain/path',
-        // 'prospero://fully.qualified.domain/path',
-        // 'proxy://fully.qualified.domain/path',
-        // 'psyc://fully.qualified.domain/path',
-        // 'query://fully.qualified.domain/path',
-        // 'redis://fully.qualified.domain/path',
-        // 'rediss://fully.qualified.domain/path',
-        // 'reload://fully.qualified.domain/path',
-        // 'res://fully.qualified.domain/path',
-        // 'resource://fully.qualified.domain/path',
-        // 'rmi://fully.qualified.domain/path',
-        // 'rsync://fully.qualified.domain/path',
-        // 'rtmfp://fully.qualified.domain/path',
-        // 'rtmp://fully.qualified.domain/path',
-        // 'rtsp://fully.qualified.domain/path',
-        // 'rtsps://fully.qualified.domain/path',
-        // 'rtspu://fully.qualified.domain/path',
-        // 'secondlife://fully.qualified.domain/path',
-        // 'service://fully.qualified.domain/path',
-        // 'session://fully.qualified.domain/path',
-        // 'sftp://fully.qualified.domain/path',
-        // 'sgn://fully.qualified.domain/path',
-        // 'shttp://fully.qualified.domain/path',
-        // 'sieve://fully.qualified.domain/path',
-        // 'sip://fully.qualified.domain/path',
-        // 'sips://fully.qualified.domain/path',
-        // 'skype://fully.qualified.domain/path',
-        // 'smb://fully.qualified.domain/path',
-        // 'sms://fully.qualified.domain/path',
-        // 'smtp://fully.qualified.domain/path',
-        // 'snews://fully.qualified.domain/path',
-        // 'snmp://fully.qualified.domain/path',
-        // 'soap.beep://fully.qualified.domain/path',
-        // 'soap.beeps://fully.qualified.domain/path',
-        // 'soldat://fully.qualified.domain/path',
-        // 'spotify://fully.qualified.domain/path',
-        // 'ssh://fully.qualified.domain/path',
-        // 'steam://fully.qualified.domain/path',
-        // 'stun://fully.qualified.domain/path',
-        // 'stuns://fully.qualified.domain/path',
-        // 'submit://fully.qualified.domain/path',
-        // 'svn://fully.qualified.domain/path',
-        // 'tag://fully.qualified.domain/path',
-        // 'teamspeak://fully.qualified.domain/path',
-        // 'tel://fully.qualified.domain/path',
-        // 'teliaeid://fully.qualified.domain/path',
-        // 'telnet://fully.qualified.domain/path',
-        // 'tftp://fully.qualified.domain/path',
-        // 'things://fully.qualified.domain/path',
-        // 'thismessage://fully.qualified.domain/path',
-        // 'tip://fully.qualified.domain/path',
-        // 'tn3270://fully.qualified.domain/path',
-        // 'turn://fully.qualified.domain/path',
-        // 'turns://fully.qualified.domain/path',
-        // 'tv://fully.qualified.domain/path',
-        // 'udp://fully.qualified.domain/path',
-        // 'unreal://fully.qualified.domain/path',
-        // 'urn://fully.qualified.domain/path',
-        // 'ut2004://fully.qualified.domain/path',
-        // 'vemmi://fully.qualified.domain/path',
-        // 'ventrilo://fully.qualified.domain/path',
-        // 'videotex://fully.qualified.domain/path',
-        // 'view-source://fully.qualified.domain/path',
-        // 'wais://fully.qualified.domain/path',
-        // 'webcal://fully.qualified.domain/path',
-        // 'ws://fully.qualified.domain/path',
-        // 'wss://fully.qualified.domain/path',
-        // 'wtai://fully.qualified.domain/path',
-        // 'wyciwyg://fully.qualified.domain/path',
-        // 'xcon://fully.qualified.domain/path',
-        // 'xcon-userid://fully.qualified.domain/path',
-        // 'xfire://fully.qualified.domain/path',
-        // 'xmlrpc.beep://fully.qualified.domain/path',
-        // 'xmlrpc.beeps://fully.qualified.domain/path',
-        // 'xmpp://fully.qualified.domain/path',
-        // 'xri://fully.qualified.domain/path',
-        // 'ymsgr://fully.qualified.domain/path',
-        // 'z39.50://fully.qualified.domain/path',
-        // 'z39.50r://fully.qualified.domain/path',
-        // 'z39.50s://fully.qualified.domain/path',
+        'aaa://fully.qualified.domain/path',
+        'aaas://fully.qualified.domain/path',
+        'about://fully.qualified.domain/path',
+        'acap://fully.qualified.domain/path',
+        'acct://fully.qualified.domain/path',
+        'acr://fully.qualified.domain/path',
+        'adiumxtra://fully.qualified.domain/path',
+        'afp://fully.qualified.domain/path',
+        'afs://fully.qualified.domain/path',
+        'aim://fully.qualified.domain/path',
+        'apt://fully.qualified.domain/path',
+        'attachment://fully.qualified.domain/path',
+        'aw://fully.qualified.domain/path',
+        'barion://fully.qualified.domain/path',
+        'beshare://fully.qualified.domain/path',
+        'bitcoin://fully.qualified.domain/path',
+        'blob://fully.qualified.domain/path',
+        'bolo://fully.qualified.domain/path',
+        'callto://fully.qualified.domain/path',
+        'cap://fully.qualified.domain/path',
+        'chrome://fully.qualified.domain/path',
+        'chrome-extension://fully.qualified.domain/path',
+        'cid://fully.qualified.domain/path',
+        'coap://fully.qualified.domain/path',
+        'coaps://fully.qualified.domain/path',
+        'com-eventbrite-attendee://fully.qualified.domain/path',
+        'content://fully.qualified.domain/path',
+        'crid://fully.qualified.domain/path',
+        'cvs://fully.qualified.domain/path',
+        'data://fully.qualified.domain/path',
+        'dav://fully.qualified.domain/path',
+        'dict://fully.qualified.domain/path',
+        'dlna-playcontainer://fully.qualified.domain/path',
+        'dlna-playsingle://fully.qualified.domain/path',
+        'dns://fully.qualified.domain/path',
+        'dntp://fully.qualified.domain/path',
+        'dtn://fully.qualified.domain/path',
+        'dvb://fully.qualified.domain/path',
+        'ed2k://fully.qualified.domain/path',
+        'example://fully.qualified.domain/path',
+        'facetime://fully.qualified.domain/path',
+        'fax://fully.qualified.domain/path',
+        'feed://fully.qualified.domain/path',
+        'feedready://fully.qualified.domain/path',
+        'file://fully.qualified.domain/path',
+        'filesystem://fully.qualified.domain/path',
+        'finger://fully.qualified.domain/path',
+        'fish://fully.qualified.domain/path',
+        'ftp://fully.qualified.domain/path',
+        'geo://fully.qualified.domain/path',
+        'gg://fully.qualified.domain/path',
+        'git://fully.qualified.domain/path',
+        'gizmoproject://fully.qualified.domain/path',
+        'go://fully.qualified.domain/path',
+        'gopher://fully.qualified.domain/path',
+        'gtalk://fully.qualified.domain/path',
+        'h323://fully.qualified.domain/path',
+        'ham://fully.qualified.domain/path',
+        'hcp://fully.qualified.domain/path',
+        'http://fully.qualified.domain/path',
+        'https://fully.qualified.domain/path',
+        'iax://fully.qualified.domain/path',
+        'icap://fully.qualified.domain/path',
+        'icon://fully.qualified.domain/path',
+        'im://fully.qualified.domain/path',
+        'imap://fully.qualified.domain/path',
+        'info://fully.qualified.domain/path',
+        'iotdisco://fully.qualified.domain/path',
+        'ipn://fully.qualified.domain/path',
+        'ipp://fully.qualified.domain/path',
+        'ipps://fully.qualified.domain/path',
+        'irc://fully.qualified.domain/path',
+        'irc6://fully.qualified.domain/path',
+        'ircs://fully.qualified.domain/path',
+        'iris://fully.qualified.domain/path',
+        'iris.beep://fully.qualified.domain/path',
+        'iris.lwz://fully.qualified.domain/path',
+        'iris.xpc://fully.qualified.domain/path',
+        'iris.xpcs://fully.qualified.domain/path',
+        'itms://fully.qualified.domain/path',
+        'jabber://fully.qualified.domain/path',
+        'jar://fully.qualified.domain/path',
+        'jms://fully.qualified.domain/path',
+        'keyparc://fully.qualified.domain/path',
+        'lastfm://fully.qualified.domain/path',
+        'ldap://fully.qualified.domain/path',
+        'ldaps://fully.qualified.domain/path',
+        'magnet://fully.qualified.domain/path',
+        'mailserver://fully.qualified.domain/path',
+        'maps://fully.qualified.domain/path',
+        'market://fully.qualified.domain/path',
+        'message://fully.qualified.domain/path',
+        'mid://fully.qualified.domain/path',
+        'mms://fully.qualified.domain/path',
+        'modem://fully.qualified.domain/path',
+        'ms-help://fully.qualified.domain/path',
+        'ms-settings://fully.qualified.domain/path',
+        'ms-settings-airplanemode://fully.qualified.domain/path',
+        'ms-settings-bluetooth://fully.qualified.domain/path',
+        'ms-settings-camera://fully.qualified.domain/path',
+        'ms-settings-cellular://fully.qualified.domain/path',
+        'ms-settings-cloudstorage://fully.qualified.domain/path',
+        'ms-settings-emailandaccounts://fully.qualified.domain/path',
+        'ms-settings-language://fully.qualified.domain/path',
+        'ms-settings-location://fully.qualified.domain/path',
+        'ms-settings-lock://fully.qualified.domain/path',
+        'ms-settings-nfctransactions://fully.qualified.domain/path',
+        'ms-settings-notifications://fully.qualified.domain/path',
+        'ms-settings-power://fully.qualified.domain/path',
+        'ms-settings-privacy://fully.qualified.domain/path',
+        'ms-settings-proximity://fully.qualified.domain/path',
+        'ms-settings-screenrotation://fully.qualified.domain/path',
+        'ms-settings-wifi://fully.qualified.domain/path',
+        'ms-settings-workplace://fully.qualified.domain/path',
+        'msnim://fully.qualified.domain/path',
+        'msrp://fully.qualified.domain/path',
+        'msrps://fully.qualified.domain/path',
+        'mtqp://fully.qualified.domain/path',
+        'mumble://fully.qualified.domain/path',
+        'mupdate://fully.qualified.domain/path',
+        'mvn://fully.qualified.domain/path',
+        'news://fully.qualified.domain/path',
+        'nfs://fully.qualified.domain/path',
+        'ni://fully.qualified.domain/path',
+        'nih://fully.qualified.domain/path',
+        'nntp://fully.qualified.domain/path',
+        'notes://fully.qualified.domain/path',
+        'oid://fully.qualified.domain/path',
+        'opaquelocktoken://fully.qualified.domain/path',
+        'pack://fully.qualified.domain/path',
+        'palm://fully.qualified.domain/path',
+        'paparazzi://fully.qualified.domain/path',
+        'pkcs11://fully.qualified.domain/path',
+        'platform://fully.qualified.domain/path',
+        'pop://fully.qualified.domain/path',
+        'pres://fully.qualified.domain/path',
+        'prospero://fully.qualified.domain/path',
+        'proxy://fully.qualified.domain/path',
+        'psyc://fully.qualified.domain/path',
+        'query://fully.qualified.domain/path',
+        'redis://fully.qualified.domain/path',
+        'rediss://fully.qualified.domain/path',
+        'reload://fully.qualified.domain/path',
+        'res://fully.qualified.domain/path',
+        'resource://fully.qualified.domain/path',
+        'rmi://fully.qualified.domain/path',
+        'rsync://fully.qualified.domain/path',
+        'rtmfp://fully.qualified.domain/path',
+        'rtmp://fully.qualified.domain/path',
+        'rtsp://fully.qualified.domain/path',
+        'rtsps://fully.qualified.domain/path',
+        'rtspu://fully.qualified.domain/path',
+        'secondlife://fully.qualified.domain/path',
+        'service://fully.qualified.domain/path',
+        'session://fully.qualified.domain/path',
+        'sftp://fully.qualified.domain/path',
+        'sgn://fully.qualified.domain/path',
+        'shttp://fully.qualified.domain/path',
+        'sieve://fully.qualified.domain/path',
+        'sip://fully.qualified.domain/path',
+        'sips://fully.qualified.domain/path',
+        'skype://fully.qualified.domain/path',
+        'smb://fully.qualified.domain/path',
+        'sms://fully.qualified.domain/path',
+        'smtp://fully.qualified.domain/path',
+        'snews://fully.qualified.domain/path',
+        'snmp://fully.qualified.domain/path',
+        'soap.beep://fully.qualified.domain/path',
+        'soap.beeps://fully.qualified.domain/path',
+        'soldat://fully.qualified.domain/path',
+        'spotify://fully.qualified.domain/path',
+        'ssh://fully.qualified.domain/path',
+        'steam://fully.qualified.domain/path',
+        'stun://fully.qualified.domain/path',
+        'stuns://fully.qualified.domain/path',
+        'submit://fully.qualified.domain/path',
+        'svn://fully.qualified.domain/path',
+        'tag://fully.qualified.domain/path',
+        'teamspeak://fully.qualified.domain/path',
+        'tel://fully.qualified.domain/path',
+        'teliaeid://fully.qualified.domain/path',
+        'telnet://fully.qualified.domain/path',
+        'tftp://fully.qualified.domain/path',
+        'things://fully.qualified.domain/path',
+        'thismessage://fully.qualified.domain/path',
+        'tip://fully.qualified.domain/path',
+        'tn3270://fully.qualified.domain/path',
+        'turn://fully.qualified.domain/path',
+        'turns://fully.qualified.domain/path',
+        'tv://fully.qualified.domain/path',
+        'udp://fully.qualified.domain/path',
+        'unreal://fully.qualified.domain/path',
+        'urn://fully.qualified.domain/path',
+        'ut2004://fully.qualified.domain/path',
+        'vemmi://fully.qualified.domain/path',
+        'ventrilo://fully.qualified.domain/path',
+        'videotex://fully.qualified.domain/path',
+        'view-source://fully.qualified.domain/path',
+        'wais://fully.qualified.domain/path',
+        'webcal://fully.qualified.domain/path',
+        'ws://fully.qualified.domain/path',
+        'wss://fully.qualified.domain/path',
+        'wtai://fully.qualified.domain/path',
+        'wyciwyg://fully.qualified.domain/path',
+        'xcon://fully.qualified.domain/path',
+        'xcon-userid://fully.qualified.domain/path',
+        'xfire://fully.qualified.domain/path',
+        'xmlrpc.beep://fully.qualified.domain/path',
+        'xmlrpc.beeps://fully.qualified.domain/path',
+        'xmpp://fully.qualified.domain/path',
+        'xri://fully.qualified.domain/path',
+        'ymsgr://fully.qualified.domain/path',
+        'z39.50://fully.qualified.domain/path',
+        'z39.50r://fully.qualified.domain/path',
+        'z39.50s://fully.qualified.domain/path',
         'http://a.pl',
-        //'http://localhost/url.php', //
         'http://local.dev',
         'http://google.com',
         'http://www.google.com',
         'https://google.com',
         'http://illuminate.dev',
-        //'http://localhost', //
         'https://laravel.com/?',
         'http://президент.рф/',
         'http://스타벅스코리아.com',
@@ -1176,7 +1426,7 @@ test('validate url with valid url', () => {
     const promises = urls.map(url => validator({'x': url}, {'x': 'url'}))
 
     return Promise.all(promises).then(result => {
-        result.forEach((valid, i) => {
+        result.forEach(valid => {
             expect(valid).toBe(true)
         })
     })
@@ -1196,6 +1446,9 @@ test('validate url with invalid url', () => {
         'http://::1',
         'foo://bar',
         'javascript://test%0Aalert(321)',
+        // localhost not supported
+        'http://localhost/url.php',
+        'http://localhost',
     ]
 
     const promises = urls.map(url => validator({'x': url}, {'x': 'url'}))
@@ -1204,5 +1457,39 @@ test('validate url with invalid url', () => {
         result.forEach(valid => {
             expect(valid).toBe(false)
         })
+    })
+})
+
+test('validate url require protocol', () => {
+    const promises = [
+        validator({'x': 'google.com'}, {'x': 'url:1'}),
+        validator({'x': 'https://google.com'}, {'x': 'url:1'}),
+        validator({'x': 'google.com'}, {'x': 'url:0'}),
+        validator({'x': 'https://google.com'}, {'x': 'url:0'})
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(false)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(true)
+        expect(result[3]).toBe(true)
+    })
+})
+
+test('validate filled', () => {
+    const promises = [
+        validator({}, {'name': 'filled'}),
+        validator({'name': ''}, {'name': 'filled'}),
+        validator({'foo': [{'id': 1}, {}]}, {'foo.*.id': 'filled'}),
+        validator({'foo': [{'id': ''}]}, {'foo.*.id': 'filled'}),
+        validator({'foo': [{'id': null}]}, {'foo.*.id': 'filled'}),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(false)
+        expect(result[2]).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(result[4]).toBe(false)
     })
 })

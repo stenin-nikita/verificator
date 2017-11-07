@@ -10,7 +10,6 @@ import deepmerge from 'deepmerge'
 import dataGet from './helpers/dataGet'
 import dataSet from './helpers/dataSet'
 import escapeString from './helpers/escapeString'
-import isFile from './helpers/isFile'
 import ValidationRuleParser from './ValidationRuleParser'
 import Translator from './Translator'
 import ErrorBag from './ErrorBag'
@@ -21,11 +20,6 @@ const dependentRules = [
     'required_without_all', 'required_if', 'required_unless',
     'confirmed', 'same', 'different', 'before', 'after',
     'before_or_equal', 'after_or_equal',
-]
-
-const implicitRules = [
-    'required', 'filled', 'required_with', 'required_with_all', 'required_without',
-    'required_without_all', 'required_if', 'required_unless', 'accepted', 'present',
 ]
 
 export default class Validator implements ValidatorInterface {
@@ -48,18 +42,22 @@ export default class Validator implements ValidatorInterface {
         this.setRules(rules)
     }
 
-    passes(): Promise<boolean> {
+    passes(name?: string): Promise<boolean> {
         this._errors = new ErrorBag()
 
         const promises: Promise<boolean>[] = []
+        const attributes = this._filterAttributes(name)
 
-        for(let attribute of Object.keys(this._rules)) {
+        if (attributes.length === 0) {
+            return Promise.reject(new Error(`Validating a non-existent attribute: "${name}".`))
+        }
+
+        for(let attribute of attributes) {
             const rules = this._rules[attribute]
 
             for(let rule of rules) {
                 const promise = this._validateAttribute(attribute, rule)
 
-                promise
                 promises.push(promise)
             }
         }
@@ -151,6 +149,22 @@ export default class Validator implements ValidatorInterface {
     /**
      * Private methods
      */
+    protected _filterAttributes(name?: string): string[] {
+        let attributes = Object.keys(this._rules)
+
+        if (typeof name === 'string' && name.length > 0) {
+            if (name.indexOf('*') > -1) {
+                const regex = new RegExp(`^${escapeString(name).replace(/\\\*/g, '([^\.]+)')}$`)
+    
+                attributes = attributes.filter(attr => regex.test(attr))
+            } else {
+                attributes = attributes.filter(attr => attr === name)
+            }
+        }
+
+        return attributes
+    }
+
     protected _validateAttribute(attribute: string, rule: Rule): Promise<boolean> {
         let { name, parameters } = rule
         const value = this.getValue(attribute)
@@ -286,43 +300,8 @@ export default class Validator implements ValidatorInterface {
             return 'numeric'
         } else if (this.hasRule(attribute, ['array'])) {
             return 'array'
-        } else if (isFile(this.getValue(attribute))) {
-            return 'file'
         }
 
         return 'string'
     }
-
-    // protected _isValidatable(rule: string, attribute: string, value: any): boolean {
-    //     return this._presentOrRuleIsImplicit(rule, attribute, value) &&
-    //            this._passesOptionalCheck(attribute) &&
-    //            this._isNotNullIfMarkedAsNullable(rule, attribute)
-    // }
-
-    // protected _presentOrRuleIsImplicit(rule: string, attribute: string, value: any): boolean {
-    //     if (typeof value === 'string' && value.trim() === '') {
-    //         return implicitRules.indexOf(rule) > -1
-    //     }
-
-    //     return RULES.present(attribute, value, [], this) || implicitRules.indexOf(rule) > -1
-    // }
-
-    // protected _isNotNullIfMarkedAsNullable(rule: string, attribute: string): boolean {
-    //     if (implicitRules.indexOf(rule) > -1 || !this.hasRule(attribute, ['nullable'])) {
-    //         return true
-    //     }
-        
-    //     return dataGet(this._data, attribute, 0) != null
-    // }
-
-    // protected _passesOptionalCheck(attribute: string): boolean {
-    //     if (!this.hasRule(attribute, ['sometimes'])) {
-    //         return true
-    //     }
-        
-    //     return false
-    //     // $data = ValidationData::initializeAndGatherData($attribute, $this->data);
-        
-    //     // return array_key_exists($attribute, $data) || in_array($attribute, array_keys($this->data));
-    // }
 }

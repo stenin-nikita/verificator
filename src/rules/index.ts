@@ -15,13 +15,10 @@ import date_format from './date_format'
 import date from './date' 
 import different from './different' 
 import digits_between from './digits_between' 
-import digits from './digits' 
-import dimensions from './dimensions' 
+import digits from './digits'
 import distinct from './distinct' 
-import email from './email' 
-import file from './file' 
-import filled from './filled' 
-import image from './image' 
+import email from './email'
+import filled from './filled'
 import in_array from './in_array' 
 import index from './index' 
 import integer from './integer' 
@@ -31,8 +28,6 @@ import ipv4 from './ipv4'
 import ipv6 from './ipv6' 
 import json from './json' 
 import max from './max' 
-import mimes from './mimes' 
-import mimetypes from './mimetypes' 
 import min from './min' 
 import not_in from './not_in' 
 import nullable from './nullable' 
@@ -70,12 +65,9 @@ const rules: any = {
     different,
     digits_between,
     digits,
-    dimensions,
     distinct,
     email,
-    file,
     filled,
-    image,
     in_array,
     index,
     integer,
@@ -85,8 +77,6 @@ const rules: any = {
     ipv6,
     json,
     max,
-    mimes,
-    mimetypes,
     min,
     not_in,
     nullable,

@@ -1,6 +1,5 @@
 const messages = {
     accepted: ({ attribute }: any) => `Вы должны принять ${attribute}.`,
-    active_url: ({ attribute }: any) => `Поле ${attribute} содержит недействительный URL.`,
     after: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата после ${date}.`,
     after_or_equal: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата после или равняться ${date}.`,
     alpha: ({ attribute }: any) => `Поле ${attribute} может содержать только буквы.`,
@@ -11,7 +10,6 @@ const messages = {
     before_or_equal: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата до или равняться ${date}.`,
     between: {
         numeric: ({ attribute, parameters: [ min, max ] }: any) => `Поле ${attribute} должно быть между ${min} и ${max}.`,
-        file: ({ attribute, parameters: [ min, max ] }: any) => `Размер файла в поле ${attribute} должен быть между ${min} и ${max} Килобайт(а).`,
         string: ({ attribute, parameters: [ min, max ] }: any) => `Количество символов в поле ${attribute} должно быть между ${min} и ${max}.`,
         array: ({ attribute, parameters: [ min, max ] }: any) => `Количество элементов в поле ${attribute} должно быть между ${min} и ${max}.`,
     },
@@ -22,12 +20,9 @@ const messages = {
     different: ({ attribute, parameters: [ other ] }: any) => `Поля ${attribute} и ${other} должны различаться.`,
     digits: ({ attribute, parameters: [ digits ] }: any) => `Длина цифрового поля ${attribute} должна быть ${digits}.`,
     digits_between: ({ attribute, parameters: [ min, max ] }: any) => `Длина цифрового поля ${attribute} должна быть между ${min} и ${max}.`,
-    dimensions: ({ attribute }: any) => `Поле ${attribute} имеет недопустимые размеры изображения.`,
     distinct: ({ attribute }: any) => `Поле ${attribute} содержит повторяющееся значение.`,
     email: ({ attribute }: any) => `Поле ${attribute} должно быть действительным электронным адресом.`,
-    file: ({ attribute }: any) => `Поле ${attribute} должно быть файлом.`,
     filled: ({ attribute }: any) => `Поле ${attribute} обязательно для заполнения.`,
-    image: ({ attribute }: any) => `Поле ${attribute} должно быть изображением.`,
     in: ({ attribute }: any) => `Выбранное значение для ${attribute} ошибочно.`,
     in_array: ({ attribute, parameters: [ other ] }: any) => `Поле ${attribute} не существует в ${other}.`,
     integer: ({ attribute }: any) => `Поле ${attribute} должно быть целым числом.`,
@@ -37,15 +32,11 @@ const messages = {
     json: ({ attribute }: any) => `Поле ${attribute} должно быть JSON строкой.`,
     max: {
         numeric: ({ attribute, parameters: [ max ] }: any) => `Поле ${attribute} не может быть более ${max}.`,
-        file: ({ attribute, parameters: [ max ] }: any) => `Размер файла в поле ${attribute} не может быть более ${max} Килобайт(а).`,
         string: ({ attribute, parameters: [ max ] }: any) => `Количество символов в поле ${attribute} не может превышать ${max}.`,
         array: ({ attribute, parameters: [ max ] }: any) => `Количество элементов в поле ${attribute} не может превышать ${max}.`,
     },
-    mimes: ({ attribute, parameters: [ values ] }: any) => `Поле ${attribute} должно быть файлом одного из следующих типов: ${values}.`,
-    mimetypes: ({ attribute, parameters: [ values ] }: any) => `Поле ${attribute} должно быть файлом одного из следующих типов: ${values}.`,
     min: {
         numeric: ({ attribute, parameters: [ min ] }: any) => `Поле ${attribute} должно быть не менее ${min}.`,
-        file: ({ attribute, parameters: [ min ] }: any) => `Размер файла в поле ${attribute} должен быть не менее ${min} Килобайт(а).`,
         string: ({ attribute, parameters: [ min ] }: any) => `Количество символов в поле ${attribute} должно быть не менее ${min}.`,
         array: ({ attribute, parameters: [ min ] }: any) => `Количество элементов в поле ${attribute} должно быть не менее ${min}.`,
     },
@@ -63,12 +54,10 @@ const messages = {
     same: ({ attribute, parameters: [ other ] }: any) => `Значение ${attribute} должно совпадать с ${other}.`,
     size: {
         numeric: ({ attribute, parameters: [ size ] }: any) => `Поле ${attribute} должно быть равным ${size}.`,
-        file: ({ attribute, parameters: [ size ] }: any) => `Размер файла в поле ${attribute} должен быть равен ${size} Килобайт(а).`,
         string: ({ attribute, parameters: [ size ] }: any) => `Количество символов в поле ${attribute} должно быть равным ${size}.`,
         array: ({ attribute, parameters: [ size ] }: any) => `Количество элементов в поле ${attribute} должно быть равным ${size}.`,
     },
     string: ({ attribute }: any) => `Поле ${attribute} должно быть строкой.`,
-    uploaded: ({ attribute }: any) => `Загрузка поля ${attribute} не удалась.`,
     url: ({ attribute }: any) => `Поле ${attribute} имеет ошибочный формат.`,
 }
   

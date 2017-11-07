@@ -1,5 +1,5 @@
 const flattenData = (data: any): { [key: string]: any } => {
-	var result = {}
+	var result: any = {}
 	
 	for (var i in data) {
 		if (!data.hasOwnProperty(i)) continue
