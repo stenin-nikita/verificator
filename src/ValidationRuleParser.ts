@@ -56,11 +56,11 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         if (value) {
             if (Array.isArray(value)) {
                 value.forEach((v, i) => {
-                    this._explodeRules(attribute.replace('*', String(i)), rule)
+                    this._explodeRules(String(attribute).replace('*', String(i)), rule)
                 })
             } else if (Object.prototype.toString.call(value) === '[object Object]') {
                 Object.keys(value).forEach(key => {
-                    this._explodeRules(attribute.replace('*', key), rule)
+                    this._explodeRules(String(attribute).replace('*', key), rule)
                 })
             }
         }
@@ -71,13 +71,20 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
             rules = rules.split('|')
         }
     
-        return rules.map(rule => this._parseRule(rule))
+        return rules.filter(rule => (Array.isArray(rule) || typeof rule === 'string') && rule.length).map(rule => this._parseRule(rule))
     }
 
-    protected _parseRule(rule: string): Rule {
-        const [ name, parameter ] = rule.split(':')
-    
-        const parameters = typeof parameter === 'string' ? this._parseParameters(name, parameter) : []
+    protected _parseRule(rule: string|any[]): Rule {
+        if (Array.isArray(rule)) {
+            return {
+                name: rule[0].trim(),
+                parameters: rule.slice(1)
+            }
+        }
+        
+        const name = rule.indexOf(':') > -1 ? rule.substr(0, rule.indexOf(':')) : rule
+        const parameter = rule.indexOf(':') > -1 ? rule.substr(rule.indexOf(':') + 1) : []
+        const parameters = this._parseParameters(name, parameter)
     
         return {
             name: name.trim(),
@@ -85,7 +92,11 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         }
     }
 
-    protected _parseParameters(rule: string, parameter: string): string[] {
+    protected _parseParameters(rule: string, parameter: string|any[]): string[] {
+        if (Array.isArray(parameter)) {
+            return parameter
+        }
+
         if (rule.toLowerCase() === 'regex') {
             return [ parameter ]
         }

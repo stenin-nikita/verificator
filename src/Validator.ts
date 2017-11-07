@@ -182,14 +182,12 @@ export default class Validator implements ValidatorInterface {
 
     protected _parseData(data: any): any {
         let newData: any
-        
+    
         if (Array.isArray(data)) {
             newData = []
     
             data.forEach(value => newData.push(this._parseData(value)))
-        } else if (isFile(data) || (/string|number|boolean/).test(typeof data)) {
-            return data
-        } else {
+        } else if (Object.prototype.toString.call(data) === '[object Object]') {
             newData = {}
     
             Object.keys(data).forEach(key => {
@@ -210,6 +208,8 @@ export default class Validator implements ValidatorInterface {
                     newData[key] = value
                 }
             })
+        } else {
+            return data
         }
         
         return newData
@@ -270,7 +270,7 @@ export default class Validator implements ValidatorInterface {
             return attribute
         }
 
-        return attribute.replace(/_/g, ' ')
+        return String(attribute).replace(/_/g, ' ')
     }
 
     protected _getDisplayableParameters(rule: string, parameters: any[]): any[] {

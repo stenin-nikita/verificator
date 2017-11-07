@@ -10,7 +10,7 @@ const parseDate = (date: string | Date, format: string): null|Date => {
     const parsed = parse(date, format, new Date())
 
     if (!isValid(parsed) || formatDate(parsed, format) !== date) {
-        return null;
+        return null
     }
     
     return parsed
