@@ -16,6 +16,7 @@ const messages = {
     boolean: ({ attribute }: any) => `Поле ${attribute} должно иметь значение логического типа.`,
     confirmed: ({ attribute }: any) => `Поле ${attribute} не совпадает с подтверждением.`,
     date: ({ attribute }: any) => `Поле ${attribute} не является датой.`,
+    date_equals: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата равная ${date}.`,
     date_format: ({ attribute, parameters: [ format ] }: any) => `Поле ${attribute} не соответствует формату ${format}.`,
     different: ({ attribute, parameters: [ other ] }: any) => `Поля ${attribute} и ${other} должны различаться.`,
     digits: ({ attribute, parameters: [ digits ] }: any) => `Длина цифрового поля ${attribute} должна быть ${digits}.`,
