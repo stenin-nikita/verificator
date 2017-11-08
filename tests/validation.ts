@@ -30,17 +30,17 @@ test('alternative format', () => {
 test('validate nullable', () => {
     const promises = [
         validator({}, { name: 'nullable' }),
-        validator({ 'name': undefined, { name: 'nullable' }),
-        validator({ 'name': null, { name: 'nullable' }),
-        validator({ 'name': true, { name: 'nullable' }),
-        validator({ 'name': false, { name: 'nullable' }),
-        validator({ 'name': 0, { name: 'nullable' }),
-        validator({ 'name': 1, { name: 'nullable' }),
-        validator({ 'name': '0', { name: 'nullable' }),
-        validator({ 'name': '1', { name: 'nullable' }),
-        validator({ 'name': 'test', { name: 'nullable' }),
-        validator({ 'name': [], { name: 'nullable' }),
-        validator({ 'name': {}, { name: 'nullable' }),
+        validator({ 'name': undefined}, { name: 'nullable' }),
+        validator({ 'name': null}, { name: 'nullable' }),
+        validator({ 'name': true}, { name: 'nullable' }),
+        validator({ 'name': false}, { name: 'nullable' }),
+        validator({ 'name': 0}, { name: 'nullable' }),
+        validator({ 'name': 1}, { name: 'nullable' }),
+        validator({ 'name': '0'}, { name: 'nullable' }),
+        validator({ 'name': '1'}, { name: 'nullable' }),
+        validator({ 'name': 'test'}, { name: 'nullable' }),
+        validator({ 'name': []}, { name: 'nullable' }),
+        validator({ 'name': {}}, { name: 'nullable' }),
     ]
 
     return Promise.all(promises).then(result => {
@@ -380,15 +380,15 @@ test('validate string', () => {
 test('validate string', () => {
     const promises = [
         validator({'x': []}, {'x': 'array'}),
-        validator({'x': undefined, {'x': 'array'}),
-        validator({'x': null, {'x': 'array'}),
-        validator({'x': true, {'x': 'array'}),
-        validator({'x': false, {'x': 'array'}),
-        validator({'x': 1, {'x': 'array'}),
-        validator({'x': 0, {'x': 'array'}),
-        validator({'x': '', {'x': 'array'}),
-        validator({'x': 'test', {'x': 'array'}),
-        validator({'x': {}, {'x': 'array'}),
+        validator({'x': undefined}, {'x': 'array'}),
+        validator({'x': null}, {'x': 'array'}),
+        validator({'x': true}, {'x': 'array'}),
+        validator({'x': false}, {'x': 'array'}),
+        validator({'x': 1}, {'x': 'array'}),
+        validator({'x': 0}, {'x': 'array'}),
+        validator({'x': ''}, {'x': 'array'}),
+        validator({'x': 'test'}, {'x': 'array'}),
+        validator({'x': {}}, {'x': 'array'}),
     ]
 
     return Promise.all(promises).then(result => {
@@ -1491,5 +1491,487 @@ test('validate filled', () => {
         expect(result[2]).toBe(true)
         expect(result[3]).toBe(false)
         expect(result[4]).toBe(false)
+    })
+})
+
+test('validate nested array with common parent child key', () => {
+    const promises = [
+        validator({
+            'products': [
+                {
+                    'price': 2,
+                    'options': [
+                        {'price': 1},
+                    ],
+                },
+                {
+                    'price': 2,
+                    'options': [
+                        {'price': 0},
+                    ],
+                },
+            ],
+        }, {'products.*.price': 'numeric|min:1'}),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+    })
+})
+
+test('validate nested array with non numeric keys', () => {
+    const promises = [
+        validator({'item_amounts': {'item_123': 2}}, {'item_amounts.*': 'numeric|min:1'}),
+        validator({'item_amounts': {'item_123': 2}}, {'item_amounts.*': 'numeric|min:5'}),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(false)
+    })
+})
+
+test('validate implicit each with asterisks confirmed', () => {
+    const validators = [
+        // confirmed passes
+        new Validator({'foo':[
+            {'password': 'foo0', 'password_confirmation': 'foo0'},
+            {'password': 'foo1', 'password_confirmation': 'foo1'},
+        ]}, {'foo.*.password': 'confirmed'}, locale),
+        // nested confirmed passes
+        new Validator({'foo': [
+            {'bar': [
+                {'password': 'bar0', 'password_confirmation': 'bar0'},
+                {'password': 'bar1', 'password_confirmation': 'bar1'},
+            ]},
+            {'bar': [
+                {'password': 'bar2', 'password_confirmation': 'bar2'},
+                {'password': 'bar3', 'password_confirmation': 'bar3'},
+            ]},
+        ]}, {'foo.*.bar.*.password': 'confirmed'}, locale),
+        // confirmed fails
+        new Validator({'foo': [
+            {'password': 'foo0', 'password_confirmation': 'bar0'},
+            {'password': 'foo1'},
+        ]}, {'foo.*.password': 'confirmed'}, locale),
+        // nested confirmed fails
+        new Validator({'foo': [
+            {'bar': [
+                {'password': 'bar0'},
+                {'password': 'bar1', 'password_confirmation': 'bar2'},
+            ]},
+        ]}, {'foo.*.bar.*.password': 'confirmed'}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.password')).toBe(true)
+        expect(validators[2].errors.has('foo.1.password')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.password')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.password')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks different', () => {
+    const validators = [
+        // different passes
+        new Validator({'foo': [
+            {'name': 'foo', 'last': 'bar'},
+            {'name': 'bar', 'last': 'foo'},
+        ]}, {'foo.*.name': ['different:foo.*.last']}, locale),
+        // nested different passes
+        new Validator({'foo': [
+            {'bar': [
+                {'name': 'foo', 'last': 'bar'},
+                {'name': 'bar', 'last': 'foo'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}, locale),
+        // different fails
+        new Validator({'foo': [
+            {'name': 'foo', 'last': 'foo'},
+            {'name': 'bar', 'last': 'bar'},
+        ]}, {'foo.*.name': ['different:foo.*.last']}, locale),
+        // nested different fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': 'foo', 'last': 'foo'},
+                {'name': 'bar', 'last': 'bar'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks same', () => {
+    const validators = [
+        // same passes
+        new Validator({'foo': [
+            {'name': 'foo', 'last': 'foo'},
+            {'name': 'bar', 'last': 'bar'},
+        ]}, {'foo.*.name': ['same:foo.*.last']}, locale),
+        // nested same passes
+        new Validator({'foo': [
+            {'bar': [
+                {'name': 'foo', 'last': 'foo'},
+                {'name': 'bar', 'last': 'bar'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}, locale),
+        // same fails
+        new Validator({'foo': [
+            {'name': 'foo', 'last': 'bar'},
+            {'name': 'bar', 'last': 'foo'},
+        ]}, {'foo.*.name': ['same:foo.*.last']}, locale),
+        // nested same fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': 'foo', 'last': 'bar'},
+                {'name': 'bar', 'last': 'foo'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required', () => {
+    const validators = [
+        // required passes
+        new Validator({'foo': [
+            {'name': 'first'},
+            {'name': 'second'},
+        ]}, {'foo.*.name': ['required']}, locale),
+        // nested required passes
+        new Validator({'foo': [
+            {'name': 'first'},
+            {'name': 'second'},
+        ]}, {'foo.*.name': ['required']}, locale),
+        // required fails
+        new Validator({'foo': [
+            {'name': null},
+            {'name': null, 'last': 'last'},
+        ]}, {'foo.*.name': ['required']}, locale),
+        // nested required fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null},
+                {'name': null},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_if', () => {
+    const validators = [
+        // required_if passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'foo'},
+            {'last': 'bar'},
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        // nested required_if passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'foo'},
+            {'last': 'bar'},
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        // required_if fails
+        new Validator({'foo': [
+            {'name': null, 'last': 'foo'},
+            {'name': null, 'last': 'foo'},
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        // nested required_if fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'last': 'foo'},
+                {'name': null, 'last': 'foo'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_if:foo.*.bar.*.last,foo']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_unless', () => {
+    const validators = [
+        // required_unless passes
+        new Validator({'foo': [
+            {'name': null, 'last': 'foo'},
+            {'name': 'second', 'last': 'bar'},
+        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}, locale),
+        // nested required_unless passes
+        new Validator({'foo': [
+            {'name': null, 'last': 'foo'},
+            {'name': 'second', 'last': 'foo'},
+        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}, locale),
+        // required_unless fails
+        new Validator({'foo': [
+            {'name': null, 'last': 'baz'},
+            {'name': null, 'last': 'bar'},
+        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}, locale),
+        // nested required_unless fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'last': 'bar'},
+                {'name': null, 'last': 'bar'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_with', () => {
+    const validators = [
+        // required_with passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'last'},
+            {'name': 'second', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        // nested required_with passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'last'},
+            {'name': 'second', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        // required_with fails
+        new Validator({'foo': [
+            {'name': null, 'last': 'last'},
+            {'name': null, 'last': 'last'},
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        new Validator({'fields': {
+            'fr': {'name': '', 'content': 'ragnar'},
+            'es': {'name': '', 'content': 'lagertha'},
+        }}, {'fields.*.name': 'required_with:fields.*.content'},  locale),
+        // nested required_with fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'last': 'last'},
+                {'name': null, 'last': 'last'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_with:foo.*.bar.*.last']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(result[4]).toBe(false)
+        expect(validators[4].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[4].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_with_all', () => {
+    const validators = [
+        // required_with_all passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'last', 'middle': 'middle'},
+            {'name': 'second', 'last': 'last', 'middle': 'middle'},
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        // nested required_with_all passes
+        new Validator({'foo': [
+            {'name': 'first', 'last': 'last', 'middle': 'middle'},
+            {'name': 'second', 'last': 'last', 'middle': 'middle'},
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        // required_with_all fails
+        new Validator({'foo': [
+            {'name': null, 'last': 'last', 'middle': 'middle'},
+            {'name': null, 'last': 'last', 'middle': 'middle'},
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        // nested required_with_all fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'last': 'last', 'middle': 'middle'},
+                {'name': null, 'last': 'last', 'middle': 'middle'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_with_all:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+    
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_without', () => {
+    const validators = [
+        // required_without passes
+        new Validator({'foo': [
+            {'name': 'first', 'middle': 'middle'},
+            {'name': 'second', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        // nested required_without passes
+        new Validator({'foo': [
+            {'name': 'first', 'middle': 'middle'},
+            {'name': 'second', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        // required_without fails
+        new Validator({'foo': [
+            {'name': null, 'last': 'last'},
+            {'name': null, 'middle': 'middle'},
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        // nested required_without fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'last': 'last'},
+                {'name': null, 'middle': 'middle'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_without:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks required_without_all', () => {
+    const validators = [
+        // required_without_all passes
+        new Validator({'foo': [
+            {'name': 'first'},
+            {'name': null, 'middle': 'middle'},
+            {'name': null, 'middle': 'middle', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        // required_without_all fails
+        // nested required_without_all passes
+        new Validator({'foo': [
+            {'name': 'first'},
+            {'name': null, 'middle': 'middle'},
+            {'name': null, 'middle': 'middle', 'last': 'last'},
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        new Validator({'foo': [
+            {'name': null, 'foo': 'foo', 'bar': 'bar'},
+            {'name': null, 'foo': 'foo', 'bar': 'bar'},
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        // nested required_without_all fails
+        new Validator({'foo': [
+            {'bar': [
+                {'name': null, 'foo': 'foo', 'bar': 'bar'},
+                {'name': null, 'foo': 'foo', 'bar': 'bar'},
+            ]},
+        ]}, {'foo.*.bar.*.name': ['required_without_all:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+    ]
+
+    const promises = validators.map(validator => validator.passes())
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(true)
+        expect(result[2]).toBe(false)
+        expect(validators[2].errors.has('foo.0.name')).toBe(true)
+        expect(validators[2].errors.has('foo.1.name')).toBe(true)
+        expect(result[3]).toBe(false)
+        expect(validators[3].errors.has('foo.0.bar.0.name')).toBe(true)
+        expect(validators[3].errors.has('foo.0.bar.1.name')).toBe(true)
+    })
+})
+
+test('validate implicit each with asterisks before and after', () => {
+    const promises = [
+        validator({'foo': [{'start': '2016-04-19', 'end': '2017-04-19'}]}, {'foo.*.start': ['before:foo.*.end']}),
+        validator({'foo': [{'start': '2016-04-19', 'end': '2017-04-19'}]}, {'foo.*.end': ['before:foo.*.start']}),
+        validator({'foo': [{'start': '2016-04-19', 'end': '2017-04-19'}]}, {'foo.*.end': ['after:foo.*.start']}),
+        validator({'foo': [{'start': '2016-04-19', 'end': '2017-04-19'}]}, {'foo.*.start': ['after:foo.*.end']}),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(true)
+        expect(result[1]).toBe(false)
+        expect(result[2]).toBe(true)
+        expect(result[3]).toBe(false)
+    })
+})
+
+test('validate using setters with implicit rules', () => {
+    const promises = [
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}, locale).setData({'foo': ['a', 'b', 'c', 4]}).passes(),
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}, locale).setRules({'foo.*': 'integer'}).passes(),
+    ]
+
+    return Promise.all(promises).then(result => {
+        expect(result[0]).toBe(false)
+        expect(result[1]).toBe(false)
     })
 })

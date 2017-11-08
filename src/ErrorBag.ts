@@ -1,11 +1,23 @@
-export default class ErrorBag {
+import { ErrorBagInterface } from './interfaces'
+
+export default class ErrorBag implements ErrorBagInterface {
     private _messages: { [key: string]: string[] } = {}
 
-    add(key: string, message: string) {
+    add(key: string, message: string): this {
         this._messages[key] = this._messages[key] || []
 
         if (this._messages[key].indexOf(message) === -1) {
             this._messages[key].push(message)
+        }
+
+        return this
+    }
+
+    clear(key?: string): this {
+        if (key != null && this.has(key)) {
+            this._messages[key] = []
+        } else {
+            this._messages = {}
         }
 
         return this

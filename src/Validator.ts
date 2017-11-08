@@ -3,8 +3,9 @@ import {
     Rules,
     InputRules,
     ValidationData,
+    ErrorBagInterface,
     ValidatorInterface,
-    ImplicitAttributes
+    ImplicitAttributes,
 } from './interfaces'
 import deepmerge from 'deepmerge'
 import dataGet from './helpers/dataGet'
@@ -13,7 +14,8 @@ import escapeString from './helpers/escapeString'
 import ValidationRuleParser from './ValidationRuleParser'
 import Translator from './Translator'
 import ErrorBag from './ErrorBag'
-import RULES from './rules'
+import defaultLocale from '../locale/en'
+import defaultRules from './rules'
 
 const dependentRules = [
     'required_with', 'required_with_all', 'required_without',
@@ -21,6 +23,9 @@ const dependentRules = [
     'confirmed', 'same', 'different', 'before', 'after',
     'before_or_equal', 'after_or_equal',
 ]
+
+let RULES = defaultRules
+let LOCALE = defaultLocale
 
 export default class Validator implements ValidatorInterface {
     protected _data: ValidationData
@@ -33,13 +38,22 @@ export default class Validator implements ValidatorInterface {
 
     protected _translator: Translator
 
-    protected _errors: ErrorBag
+    protected _errors: ErrorBagInterface
 
-    constructor(data: ValidationData, rules: InputRules, locale: any) {
+    protected _RULES: any
+
+    constructor(data: ValidationData, rules: InputRules, locale: any = LOCALE) {
         this._translator = new Translator(locale)
         this._data = this._parseData(data)
 
         this.setRules(rules)
+
+        this._errors = new ErrorBag()
+        this._RULES = { ...defaultRules }
+    }
+
+    get errors(): ErrorBagInterface {
+        return this._errors
     }
 
     passes(name?: string): Promise<boolean> {
@@ -48,7 +62,7 @@ export default class Validator implements ValidatorInterface {
         const promises: Promise<boolean>[] = []
         const attributes = this._filterAttributes(name)
 
-        if (attributes.length === 0) {
+        if (name && attributes.length === 0) {
             return Promise.reject(new Error(`Validating a non-existent attribute: "${name}".`))
         }
 
@@ -128,10 +142,6 @@ export default class Validator implements ValidatorInterface {
         return dataGet(this._data, attribute)
     }
 
-    errors(): any {
-        return this._errors
-    }
-
     getPrimaryAttribute(attribute: string): string {
         for(let unparsed of Object.keys(this._implicitAttributes)) {
             if (this._implicitAttributes[unparsed].indexOf(attribute) > -1) {
@@ -142,8 +152,36 @@ export default class Validator implements ValidatorInterface {
         return attribute
     }
 
+    setLocale(locale?: any): this {
+        this._translator = new Translator(locale || defaultLocale)
+
+        return this
+    }
+
+    extend(name: string, func: Function): this {
+        if (typeof func !== 'function') {
+            throw new TypeError(`The validator of rule '${name}' must be a function`)
+        }
+
+        this._RULES[name] = func
+
+        return this
+    }
+
     static make(data: ValidationData, rules: InputRules, translator: any): Validator {
         return new Validator(data, rules, translator)
+    }
+
+    static setLocale(locale?: any) {
+        LOCALE = locale || defaultLocale
+    }
+
+    static extend(name: string, func: Function) {
+        if (typeof func !== 'function') {
+            throw new TypeError(`The validator of rule '${name}' must be a function`)
+        }
+
+        RULES[name] = func
     }
 
     /**

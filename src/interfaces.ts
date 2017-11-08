@@ -29,8 +29,28 @@ export interface ValidationRuleParserInterface {
     parse(rules: InputRules): this
 }
 
+export interface ErrorBagInterface {
+    add(key: string, message: string): this
+
+    clear(key?: string): this
+
+    first(key: string): string
+
+    has(key: string): boolean
+
+    get(key: string): string[]
+
+    all(): string[]
+
+    any(): boolean
+
+    count(): number
+}
+
 export interface ValidatorInterface {
-    passes(): Promise<boolean>
+    readonly errors: ErrorBagInterface
+
+    passes(name?: string): Promise<boolean>
 
     setData(data: ValidationData): this
     
@@ -48,14 +68,5 @@ export interface ValidatorInterface {
 
     getValue(attribute: string): any
 
-    errors(): any
-}
-
-export interface ValidateOptions {
-    rules: { [key: string]: Function }
-    rule: string
-    attribute: string
-    value: any,
-    parameters: any[]
-    validator: ValidatorInterface
+    getPrimaryAttribute(attribute: string): string
 }
