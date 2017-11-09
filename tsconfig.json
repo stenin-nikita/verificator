@@ -16,5 +16,8 @@
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false
-  }
+  },
+  "include": [
+    "./src"
+  ]
 }
