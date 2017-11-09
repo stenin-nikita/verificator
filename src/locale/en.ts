@@ -65,7 +65,6 @@ const messages = {
 const locale = {
     name: 'en',
     messages,
-    attributes: {},
 }
 
 export default locale

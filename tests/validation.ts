@@ -1,8 +1,7 @@
 import Validator from '../src/Validator'
-import locale from '../locale/ru'
 
 const validator = (data: any, rules: any): Promise<boolean> => {
-    return new Validator(data, rules, locale).passes()
+    return new Validator(data, rules).passes()
 }
 
 test('empty rules skipped', () => {
@@ -1537,7 +1536,7 @@ test('validate implicit each with asterisks confirmed', () => {
         new Validator({'foo':[
             {'password': 'foo0', 'password_confirmation': 'foo0'},
             {'password': 'foo1', 'password_confirmation': 'foo1'},
-        ]}, {'foo.*.password': 'confirmed'}, locale),
+        ]}, {'foo.*.password': 'confirmed'}),
         // nested confirmed passes
         new Validator({'foo': [
             {'bar': [
@@ -1548,19 +1547,19 @@ test('validate implicit each with asterisks confirmed', () => {
                 {'password': 'bar2', 'password_confirmation': 'bar2'},
                 {'password': 'bar3', 'password_confirmation': 'bar3'},
             ]},
-        ]}, {'foo.*.bar.*.password': 'confirmed'}, locale),
+        ]}, {'foo.*.bar.*.password': 'confirmed'}),
         // confirmed fails
         new Validator({'foo': [
             {'password': 'foo0', 'password_confirmation': 'bar0'},
             {'password': 'foo1'},
-        ]}, {'foo.*.password': 'confirmed'}, locale),
+        ]}, {'foo.*.password': 'confirmed'}),
         // nested confirmed fails
         new Validator({'foo': [
             {'bar': [
                 {'password': 'bar0'},
                 {'password': 'bar1', 'password_confirmation': 'bar2'},
             ]},
-        ]}, {'foo.*.bar.*.password': 'confirmed'}, locale),
+        ]}, {'foo.*.bar.*.password': 'confirmed'}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1583,26 +1582,26 @@ test('validate implicit each with asterisks different', () => {
         new Validator({'foo': [
             {'name': 'foo', 'last': 'bar'},
             {'name': 'bar', 'last': 'foo'},
-        ]}, {'foo.*.name': ['different:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['different:foo.*.last']}),
         // nested different passes
         new Validator({'foo': [
             {'bar': [
                 {'name': 'foo', 'last': 'bar'},
                 {'name': 'bar', 'last': 'foo'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}, locale),
+        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}),
         // different fails
         new Validator({'foo': [
             {'name': 'foo', 'last': 'foo'},
             {'name': 'bar', 'last': 'bar'},
-        ]}, {'foo.*.name': ['different:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['different:foo.*.last']}),
         // nested different fails
         new Validator({'foo': [
             {'bar': [
                 {'name': 'foo', 'last': 'foo'},
                 {'name': 'bar', 'last': 'bar'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}, locale),
+        ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1625,26 +1624,26 @@ test('validate implicit each with asterisks same', () => {
         new Validator({'foo': [
             {'name': 'foo', 'last': 'foo'},
             {'name': 'bar', 'last': 'bar'},
-        ]}, {'foo.*.name': ['same:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['same:foo.*.last']}),
         // nested same passes
         new Validator({'foo': [
             {'bar': [
                 {'name': 'foo', 'last': 'foo'},
                 {'name': 'bar', 'last': 'bar'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}, locale),
+        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}),
         // same fails
         new Validator({'foo': [
             {'name': 'foo', 'last': 'bar'},
             {'name': 'bar', 'last': 'foo'},
-        ]}, {'foo.*.name': ['same:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['same:foo.*.last']}),
         // nested same fails
         new Validator({'foo': [
             {'bar': [
                 {'name': 'foo', 'last': 'bar'},
                 {'name': 'bar', 'last': 'foo'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}, locale),
+        ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1667,24 +1666,24 @@ test('validate implicit each with asterisks required', () => {
         new Validator({'foo': [
             {'name': 'first'},
             {'name': 'second'},
-        ]}, {'foo.*.name': ['required']}, locale),
+        ]}, {'foo.*.name': ['required']}),
         // nested required passes
         new Validator({'foo': [
             {'name': 'first'},
             {'name': 'second'},
-        ]}, {'foo.*.name': ['required']}, locale),
+        ]}, {'foo.*.name': ['required']}),
         // required fails
         new Validator({'foo': [
             {'name': null},
             {'name': null, 'last': 'last'},
-        ]}, {'foo.*.name': ['required']}, locale),
+        ]}, {'foo.*.name': ['required']}),
         // nested required fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null},
                 {'name': null},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1707,24 +1706,24 @@ test('validate implicit each with asterisks required_if', () => {
         new Validator({'foo': [
             {'name': 'first', 'last': 'foo'},
             {'last': 'bar'},
-        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}),
         // nested required_if passes
         new Validator({'foo': [
             {'name': 'first', 'last': 'foo'},
             {'last': 'bar'},
-        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}),
         // required_if fails
         new Validator({'foo': [
             {'name': null, 'last': 'foo'},
             {'name': null, 'last': 'foo'},
-        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}, locale),
+        ]}, {'foo.*.name': ['required_if:foo.*.last,foo']}),
         // nested required_if fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'last': 'foo'},
                 {'name': null, 'last': 'foo'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_if:foo.*.bar.*.last,foo']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_if:foo.*.bar.*.last,foo']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1747,24 +1746,24 @@ test('validate implicit each with asterisks required_unless', () => {
         new Validator({'foo': [
             {'name': null, 'last': 'foo'},
             {'name': 'second', 'last': 'bar'},
-        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}, locale),
+        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}),
         // nested required_unless passes
         new Validator({'foo': [
             {'name': null, 'last': 'foo'},
             {'name': 'second', 'last': 'foo'},
-        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}),
         // required_unless fails
         new Validator({'foo': [
             {'name': null, 'last': 'baz'},
             {'name': null, 'last': 'bar'},
-        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}, locale),
+        ]}, {'foo.*.name': ['required_unless:foo.*.last,foo']}),
         // nested required_unless fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'last': 'bar'},
                 {'name': null, 'last': 'bar'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1787,28 +1786,28 @@ test('validate implicit each with asterisks required_with', () => {
         new Validator({'foo': [
             {'name': 'first', 'last': 'last'},
             {'name': 'second', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}),
         // nested required_with passes
         new Validator({'foo': [
             {'name': 'first', 'last': 'last'},
             {'name': 'second', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}),
         // required_with fails
         new Validator({'foo': [
             {'name': null, 'last': 'last'},
             {'name': null, 'last': 'last'},
-        ]}, {'foo.*.name': ['required_with:foo.*.last']}, locale),
+        ]}, {'foo.*.name': ['required_with:foo.*.last']}),
         new Validator({'fields': {
             'fr': {'name': '', 'content': 'ragnar'},
             'es': {'name': '', 'content': 'lagertha'},
-        }}, {'fields.*.name': 'required_with:fields.*.content'},  locale),
+        }}, {'fields.*.name': 'required_with:fields.*.content'}),
         // nested required_with fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'last': 'last'},
                 {'name': null, 'last': 'last'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_with:foo.*.bar.*.last']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_with:foo.*.bar.*.last']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1832,24 +1831,24 @@ test('validate implicit each with asterisks required_with_all', () => {
         new Validator({'foo': [
             {'name': 'first', 'last': 'last', 'middle': 'middle'},
             {'name': 'second', 'last': 'last', 'middle': 'middle'},
-        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}),
         // nested required_with_all passes
         new Validator({'foo': [
             {'name': 'first', 'last': 'last', 'middle': 'middle'},
             {'name': 'second', 'last': 'last', 'middle': 'middle'},
-        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}),
         // required_with_all fails
         new Validator({'foo': [
             {'name': null, 'last': 'last', 'middle': 'middle'},
             {'name': null, 'last': 'last', 'middle': 'middle'},
-        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_with_all:foo.*.last,foo.*.middle']}),
         // nested required_with_all fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'last': 'last', 'middle': 'middle'},
                 {'name': null, 'last': 'last', 'middle': 'middle'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_with_all:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_with_all:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1872,24 +1871,24 @@ test('validate implicit each with asterisks required_without', () => {
         new Validator({'foo': [
             {'name': 'first', 'middle': 'middle'},
             {'name': 'second', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}),
         // nested required_without passes
         new Validator({'foo': [
             {'name': 'first', 'middle': 'middle'},
             {'name': 'second', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}),
         // required_without fails
         new Validator({'foo': [
             {'name': null, 'last': 'last'},
             {'name': null, 'middle': 'middle'},
-        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without:foo.*.last,foo.*.middle']}),
         // nested required_without fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'last': 'last'},
                 {'name': null, 'middle': 'middle'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_without:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_without:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1913,25 +1912,25 @@ test('validate implicit each with asterisks required_without_all', () => {
             {'name': 'first'},
             {'name': null, 'middle': 'middle'},
             {'name': null, 'middle': 'middle', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}),
         // required_without_all fails
         // nested required_without_all passes
         new Validator({'foo': [
             {'name': 'first'},
             {'name': null, 'middle': 'middle'},
             {'name': null, 'middle': 'middle', 'last': 'last'},
-        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}),
         new Validator({'foo': [
             {'name': null, 'foo': 'foo', 'bar': 'bar'},
             {'name': null, 'foo': 'foo', 'bar': 'bar'},
-        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}, locale),
+        ]}, {'foo.*.name': ['required_without_all:foo.*.last,foo.*.middle']}),
         // nested required_without_all fails
         new Validator({'foo': [
             {'bar': [
                 {'name': null, 'foo': 'foo', 'bar': 'bar'},
                 {'name': null, 'foo': 'foo', 'bar': 'bar'},
             ]},
-        ]}, {'foo.*.bar.*.name': ['required_without_all:foo.*.bar.*.last,foo.*.bar.*.middle']}, locale),
+        ]}, {'foo.*.bar.*.name': ['required_without_all:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
     const promises = validators.map(validator => validator.passes())
@@ -1966,8 +1965,8 @@ test('validate implicit each with asterisks before and after', () => {
 
 test('validate using setters with implicit rules', () => {
     const promises = [
-        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}, locale).setData({'foo': ['a', 'b', 'c', 4]}).passes(),
-        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}, locale).setRules({'foo.*': 'integer'}).passes(),
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setData({'foo': ['a', 'b', 'c', 4]}).passes(),
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setRules({'foo.*': 'integer'}).passes(),
     ]
 
     return Promise.all(promises).then(result => {

@@ -1,4 +1,4 @@
-import { ErrorBagInterface } from './interfaces'
+import { ErrorBagInterface } from './types'
 
 export default class ErrorBag implements ErrorBagInterface {
     private _messages: { [key: string]: string[] } = {}

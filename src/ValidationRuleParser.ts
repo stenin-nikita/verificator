@@ -6,7 +6,7 @@ import {
     ValidationData,
     ImplicitAttributes,
     ValidationRuleParserInterface,
-} from './interfaces'
+} from './types'
 import dataGet from './helpers/dataGet'
 
 export default class ValidationRuleParser implements ValidationRuleParserInterface {

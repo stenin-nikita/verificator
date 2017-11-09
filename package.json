@@ -1,6 +1,6 @@
 {
   "name": "verificator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Client and server-side validation javascript library",
   "keywords": [
     "validation",
@@ -27,7 +27,8 @@
     "lib",
     "es",
     "src",
-    "typings"
+    "typings",
+    "tests"
   ],
   "scripts": {
     "clean": "rimraf dist typings es lib",
@@ -36,7 +37,9 @@
     "build:umd": "cross-env BABEL_ENV=umd NODE_ENV=development rollup -c",
     "build:umd:min": "cross-env BABEL_ENV=umd NODE_ENV=production rollup -c",
     "build": "npm run clean && npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "lint": "tslint -p tsconfig.json src/*.ts src/**/*.ts"
+    "lint": "tslint -p tsconfig.json src/*.ts src/**/*.ts",
+    "test": "jest",
+    "cover": "jest --coverage"
   },
   "dependencies": {
     "date-fns": "^2.0.0-alpha.7",
@@ -45,6 +48,7 @@
   },
   "devDependencies": {
     "@types/deepmerge": "^1.3.2",
+    "@types/jest": "^21.1.5",
     "@types/validator": "^6.3.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
@@ -72,13 +76,40 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-register": "^6.26.0",
     "cross-env": "^5.1.1",
+    "jest": "^21.2.1",
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^2.0.1",
+    "ts-jest": "^21.2.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1"
+  },  
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "useBabelrc": true
+      }
+    },
+    "cacheDirectory": ".cache",
+    "verbose": false,
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
+    "testMatch": [
+      "**/tests/**/*.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/rules/index.ts",
+      "!src/index.ts"
+    ]
   }
 }

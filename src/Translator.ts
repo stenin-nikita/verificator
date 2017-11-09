@@ -8,13 +8,13 @@ export default class Translator {
     constructor(locale: any, customMessages: any = {}, customAttributes: any = {}) {
         this._locale = locale.name
         this._messages = locale.messages
-        this._attributes = locale.attributes
+        this._attributes = locale.attributes || {}
 
         this._customMessages = customMessages
         this._customAttributes = customAttributes
     }
 
-    public getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string) {
+    public getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string): string {
         const customMessage = this._getMessage(this._customMessages, rule, attribute, value, parameters, type)
 
         if (customMessage) {

@@ -6,7 +6,7 @@ import {
     ErrorBagInterface,
     ValidatorInterface,
     ImplicitAttributes,
-} from './interfaces'
+} from './types'
 import deepmerge from 'deepmerge'
 import dataGet from './helpers/dataGet'
 import dataSet from './helpers/dataSet'
@@ -14,7 +14,6 @@ import escapeString from './helpers/escapeString'
 import ValidationRuleParser from './ValidationRuleParser'
 import Translator from './Translator'
 import ErrorBag from './ErrorBag'
-import defaultLocale from './locale/en'
 import defaultRules from './rules'
 
 const dependentRules = [
@@ -23,6 +22,11 @@ const dependentRules = [
     'confirmed', 'same', 'different', 'before', 'after',
     'before_or_equal', 'after_or_equal',
 ]
+
+const defaultLocale = {
+    name: 'default',
+    messages: {}
+}
 
 let RULES = defaultRules
 let LOCALE = defaultLocale
@@ -42,8 +46,8 @@ export default class Validator implements ValidatorInterface {
 
     protected _RULES: any
 
-    public static make(data: ValidationData, rules: InputRules, translator: any): Validator {
-        return new Validator(data, rules, translator)
+    public static make(data: ValidationData, rules: InputRules, locale: any = LOCALE): Validator {
+        return new Validator(data, rules, locale)
     }
 
     public static setLocale(locale?: any) {
