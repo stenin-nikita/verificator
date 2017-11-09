@@ -1,5 +1,5 @@
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
-    if(!(/boolean|number|string/).test(typeof value)) {
+    if (!(/boolean|number|string/).test(typeof value)) {
         return false
     }
 
@@ -7,7 +7,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
         const json = JSON.parse(value)
 
         return (/boolean|number|object/).test(typeof json)
-    } catch(e) {
+    } catch (e) {
         return false
     }
 }

@@ -1,22 +1,24 @@
 const flattenData = (data: any): { [key: string]: any } => {
-	var result: any = {}
-	
-	for (var i in data) {
-		if (!data.hasOwnProperty(i)) continue
-		
-		if ((typeof data[i]) == 'object') {
-            var flatData = flattenData(data[i])
-    
-			for (var x in flatData) {
-				if (!flatData.hasOwnProperty(x)) {
+    let result: any = {}
+
+    for (let i in data) {
+        if (!data.hasOwnProperty(i)) {
+            continue
+        }
+
+        if (typeof data[i] === 'object') {
+            let flatData = flattenData(data[i])
+
+            for (let x in flatData) {
+                if (!flatData.hasOwnProperty(x)) {
                     continue
                 }
-				
-				result[i + '.' + x] = flatData[x]
-			}
-		} else {
-			result[i] = data[i]
-		}
+
+                result[i + '.' + x] = flatData[x]
+            }
+        } else {
+            result[i] = data[i]
+        }
     }
 
     return result

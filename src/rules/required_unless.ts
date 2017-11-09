@@ -7,7 +7,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     const data = validator.getValue(parameters[0])
     const values = parameters.slice(1)
 
-    if (values.indexOf(data) == -1) {
+    if (values.indexOf(data) === -1) {
         return required(attribute, value, parameters, validator)
     }
 

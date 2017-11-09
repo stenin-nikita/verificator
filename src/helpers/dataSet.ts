@@ -13,7 +13,7 @@ const dataSet = (obj: any, key: string, value: any) => {
         if (!(key in obj) || !isObject(obj[key])) {
             obj[key] = {}
         }
-    
+
         obj = obj[key]
     }
 

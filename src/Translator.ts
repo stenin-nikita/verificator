@@ -14,7 +14,7 @@ export default class Translator {
         this._customAttributes = customAttributes
     }
 
-    getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string) {
+    public getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string) {
         const customMessage = this._getMessage(this._customMessages, rule, attribute, value, parameters, type)
 
         if (customMessage) {
@@ -30,7 +30,7 @@ export default class Translator {
         return `Invalid value for field "${attribute}"`
     }
 
-    getAttribute(attribute: string) {
+    public getAttribute(attribute: string) {
         const attributes = this._attributes
 
         return attributes[attribute]

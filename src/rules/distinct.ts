@@ -7,12 +7,12 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     const attributeName = validator.getPrimaryAttribute(attribute)
     const path = attributeName.split('*')[0].replace(/^\.|\.$/g, '') || null
     const attributeData: any = flattenData(validator.getValue(path))
-    const regex = new RegExp(`^${escapeString(attributeName).replace(/\\\*/g, '([^\.]+)')}`, 'u')
+    const attributeNameRegex = new RegExp(`^${escapeString(attributeName).replace(/\\\*/g, '([^\.]+)')}`, 'u')
 
     Object.keys(attributeData).forEach(k => {
         const key = `${path}.${k}`
 
-        if (key != attribute && regex.test(key)) {
+        if (key !== attribute && attributeNameRegex.test(key)) {
             data.push(attributeData[k])
         }
     })
@@ -22,10 +22,10 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
 
         return data.filter(val => {
             return regex.test(val)
-        }).length == 0
+        }).length === 0
     }
 
-    return data.indexOf(value) == -1
+    return data.indexOf(value) === -1
 }
 
 export default validate

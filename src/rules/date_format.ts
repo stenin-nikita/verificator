@@ -12,7 +12,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     const [ format ] = parameters
     const date = parseDate(String(value), String(format), new Date())
 
-    return date && formatDate(date, format) == value
+    return date && formatDate(date, format) === value
 }
 
 export default validate

@@ -5,7 +5,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
 
     const [ length ] = parameters
     const str = String(value)
-    
+
     return /^[0-9]*$/.test(str) && str.length === Number(length)
 }
 

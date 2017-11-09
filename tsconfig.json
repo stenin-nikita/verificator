@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "rootDir": ".",
-    "declaration": false,
-    "stripInternal": true,
+    "rootDir": "src",
+    "outDir": "es",
+    "declaration": true,
+    "declarationDir": "typings",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noFallthroughCasesInSwitch": true,
@@ -12,13 +12,9 @@
     "target": "es2015",
     "lib": ["es2015", "es2016.array.include", "dom"],
     "skipLibCheck": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "outDir": "./dist",
+    "sourceMap": false,
     "allowSyntheticDefaultImports": true,
-    "charset": "utf8"
-  },
-  "files": [
-    "./src/index.ts"
-  ]
+    "noUnusedLocals": true,
+    "noUnusedParameters": false
+  }
 }

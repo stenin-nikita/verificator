@@ -53,7 +53,7 @@ export interface ValidatorInterface {
     passes(name?: string): Promise<boolean>
 
     setData(data: ValidationData): this
-    
+
     getData(): ValidationData
 
     setRules(rules: InputRules): this

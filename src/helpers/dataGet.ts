@@ -17,7 +17,7 @@ const dataGet = (obj: any, key: string, defaultValue?: any): any => {
         return obj[key] || defaultValue
     }
 
-    for(let segment of key.split('.')) {
+    for (let segment of key.split('.')) {
         if (isObject(obj) && segment in obj) {
             obj = obj[segment]
         } else {

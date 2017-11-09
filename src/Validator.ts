@@ -14,7 +14,7 @@ import escapeString from './helpers/escapeString'
 import ValidationRuleParser from './ValidationRuleParser'
 import Translator from './Translator'
 import ErrorBag from './ErrorBag'
-import defaultLocale from '../locale/en'
+import defaultLocale from './locale/en'
 import defaultRules from './rules'
 
 const dependentRules = [
@@ -42,6 +42,22 @@ export default class Validator implements ValidatorInterface {
 
     protected _RULES: any
 
+    public static make(data: ValidationData, rules: InputRules, translator: any): Validator {
+        return new Validator(data, rules, translator)
+    }
+
+    public static setLocale(locale?: any) {
+        LOCALE = locale || defaultLocale
+    }
+
+    public static extend(name: string, func: Function) {
+        if (typeof func !== 'function') {
+            throw new TypeError(`The validator of rule '${name}' must be a function`)
+        }
+
+        RULES[name] = func
+    }
+
     constructor(data: ValidationData, rules: InputRules, locale: any = LOCALE) {
         this._translator = new Translator(locale)
         this._data = this._parseData(data)
@@ -56,7 +72,7 @@ export default class Validator implements ValidatorInterface {
         return this._errors
     }
 
-    passes(name?: string): Promise<boolean> {
+    public passes(name?: string): Promise<boolean> {
         this._errors = new ErrorBag()
 
         const promises: Promise<boolean>[] = []
@@ -66,10 +82,10 @@ export default class Validator implements ValidatorInterface {
             return Promise.reject(new Error(`Validating a non-existent attribute: "${name}".`))
         }
 
-        for(let attribute of attributes) {
+        for (let attribute of attributes) {
             const rules = this._rules[attribute]
 
-            for(let rule of rules) {
+            for (let rule of rules) {
                 const promise = this._validateAttribute(attribute, rule)
 
                 promises.push(promise)
@@ -79,18 +95,18 @@ export default class Validator implements ValidatorInterface {
         return Promise.all(promises).then(results => results.every(result => result))
     }
 
-    setData(data: ValidationData): this {
+    public setData(data: ValidationData): this {
         this._data = this._parseData(data)
         this.setRules(this._initialRules)
-    
+
         return this
     }
-    
-    getData(): ValidationData {
+
+    public getData(): ValidationData {
         return this._data
     }
 
-    setRules(rules: InputRules): this {
+    public setRules(rules: InputRules): this {
         this._initialRules = rules
         this._rules = {}
 
@@ -99,7 +115,7 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    addRules(rules: InputRules): this {
+    public addRules(rules: InputRules): this {
         this._initialRules = deepmerge(this._initialRules || {}, rules)
 
         const response = (new ValidationRuleParser(this._data)).parse(this._initialRules)
@@ -110,15 +126,15 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    getRules(): Rules {
+    public getRules(): Rules {
         return this._rules
     }
 
-    hasRule(attribute: string, rules: string|string[]): boolean {
+    public hasRule(attribute: string, rules: string|string[]): boolean {
         return this.getRule(attribute, rules) !== null
     }
 
-    getRule(attribute: string, rules: string|string[]): Rule|null {
+    public getRule(attribute: string, rules: string|string[]): Rule|null {
         if (! (attribute in this._rules)) {
             return null
         }
@@ -126,8 +142,8 @@ export default class Validator implements ValidatorInterface {
         if (typeof rules === 'string') {
             rules = [rules]
         }
-    
-        for(let rule of this._rules[attribute]) {
+
+        for (let rule of this._rules[attribute]) {
             const { name } = rule
 
             if (rules.indexOf(name) > -1) {
@@ -138,27 +154,27 @@ export default class Validator implements ValidatorInterface {
         return null
     }
 
-    getValue(attribute: string): any {
+    public getValue(attribute: string): any {
         return dataGet(this._data, attribute)
     }
 
-    getPrimaryAttribute(attribute: string): string {
-        for(let unparsed of Object.keys(this._implicitAttributes)) {
+    public getPrimaryAttribute(attribute: string): string {
+        for (let unparsed of Object.keys(this._implicitAttributes)) {
             if (this._implicitAttributes[unparsed].indexOf(attribute) > -1) {
                 return unparsed
             }
         }
-    
+
         return attribute
     }
 
-    setLocale(locale?: any): this {
+    public setLocale(locale?: any): this {
         this._translator = new Translator(locale || defaultLocale)
 
         return this
     }
 
-    extend(name: string, func: Function): this {
+    public extend(name: string, func: Function): this {
         if (typeof func !== 'function') {
             throw new TypeError(`The validator of rule '${name}' must be a function`)
         }
@@ -166,22 +182,6 @@ export default class Validator implements ValidatorInterface {
         this._RULES[name] = func
 
         return this
-    }
-
-    static make(data: ValidationData, rules: InputRules, translator: any): Validator {
-        return new Validator(data, rules, translator)
-    }
-
-    static setLocale(locale?: any) {
-        LOCALE = locale || defaultLocale
-    }
-
-    static extend(name: string, func: Function) {
-        if (typeof func !== 'function') {
-            throw new TypeError(`The validator of rule '${name}' must be a function`)
-        }
-
-        RULES[name] = func
     }
 
     /**
@@ -193,7 +193,7 @@ export default class Validator implements ValidatorInterface {
         if (typeof name === 'string' && name.length > 0) {
             if (name.indexOf('*') > -1) {
                 const regex = new RegExp(`^${escapeString(name).replace(/\\\*/g, '([^\.]+)')}$`)
-    
+
                 attributes = attributes.filter(attr => regex.test(attr))
             } else {
                 attributes = attributes.filter(attr => attr === name)
@@ -214,7 +214,7 @@ export default class Validator implements ValidatorInterface {
         }
 
         const validate = RULES[name]
-        
+
         if (validate) {
             const promise = Promise.resolve(validate(attribute, value, parameters, this))
 
@@ -222,39 +222,39 @@ export default class Validator implements ValidatorInterface {
                 if (!valid) {
                     this._addFailure(name, attribute, value, parameters)
                 }
-    
+
                 return valid
             })
 
             return promise
         }
-        
+
         return Promise.reject(new Error(`The ${name} rule is not defined`))
     }
 
     protected _parseData(data: any): any {
         let newData: any
-    
+
         if (Array.isArray(data)) {
             newData = []
-    
+
             data.forEach(value => newData.push(this._parseData(value)))
         } else if (Object.prototype.toString.call(data) === '[object Object]') {
             newData = {}
-    
+
             Object.keys(data).forEach(key => {
                 let value = data[key]
-    
+
                 if (typeof value === 'object' && value !== null) {
                     value = this._parseData(value)
                 }
-        
+
                 if (key.indexOf('.') > -1) {
                     dataSet(newData, key, value)
                 } else if (key in newData) {
                     newData[key] = {
                         ...newData[key],
-                        ...value
+                        ...value,
                     }
                 } else {
                     newData[key] = value
@@ -263,7 +263,7 @@ export default class Validator implements ValidatorInterface {
         } else {
             return data
         }
-        
+
         return newData
     }
 
@@ -272,13 +272,13 @@ export default class Validator implements ValidatorInterface {
             .replace(/\\\*/g, '([^\.]+)')
         const regex = new RegExp(`^${pattern}`)
         const match = regex.exec(attribute)
-    
+
         if (match) {
             match.shift()
-    
+
             return match.slice(0)
         }
-    
+
         return []
     }
 
@@ -287,7 +287,7 @@ export default class Validator implements ValidatorInterface {
             keys.forEach(key => {
                 field = field.replace('*', key)
             })
-    
+
             return field
         })
     }
@@ -296,11 +296,7 @@ export default class Validator implements ValidatorInterface {
         parameters = this._getDisplayableParameters(rule, parameters)
 
         const message = this._translator.getMessage(
-            rule,
-            this._getDisplayableAttribute(attribute),
-            value,
-            parameters,
-            this._getAttributeType(attribute)
+            rule, this._getDisplayableAttribute(attribute), value, parameters, this._getAttributeType(attribute),
         )
 
         this._errors.add(attribute, message)
@@ -308,9 +304,9 @@ export default class Validator implements ValidatorInterface {
 
     protected _getDisplayableAttribute(attribute: string): string {
         const primaryAttribute = this.getPrimaryAttribute(attribute)
-        const expectedAttributes = attribute != primaryAttribute ? [attribute, primaryAttribute] : [attribute]
+        const expectedAttributes = attribute !== primaryAttribute ? [attribute, primaryAttribute] : [attribute]
 
-        for(let name of expectedAttributes) {
+        for (let name of expectedAttributes) {
             const line = this._translator.getAttribute(name)
 
             if (line) {

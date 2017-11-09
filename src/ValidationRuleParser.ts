@@ -5,7 +5,7 @@ import {
     InputRules,
     ValidationData,
     ImplicitAttributes,
-    ValidationRuleParserInterface
+    ValidationRuleParserInterface,
 } from './interfaces'
 import dataGet from './helpers/dataGet'
 
@@ -20,7 +20,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         this.data = data
     }
 
-    parse(rules: InputRules): this {
+    public parse(rules: InputRules): this {
         this.rules = {}
         this.implicitAttributes = {}
 
@@ -39,9 +39,9 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
             this._explodeWildcardRules(attribute, rule)
         } else {
             const [name, rules] = rule
-    
+
             this.rules[attribute] = this._parseRules(rules)
-    
+
             if (name.indexOf('*') > -1) {
                 this.implicitAttributes[name] = this.implicitAttributes[name] || []
                 this.implicitAttributes[name].push(attribute)
@@ -52,7 +52,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
     protected _explodeWildcardRules(attribute: string, rule: [string, InputRule]) {
         const path = attribute.substr(0, attribute.indexOf('*') - 1)
         const value = dataGet(this.data, path)
-    
+
         if (value) {
             if (Array.isArray(value)) {
                 value.forEach((v, i) => {
@@ -70,7 +70,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         if (typeof rules === 'string') {
             rules = rules.split('|')
         }
-    
+
         return rules.filter(rule => (Array.isArray(rule) || typeof rule === 'string') && rule.length).map(rule => this._parseRule(rule))
     }
 
@@ -78,17 +78,17 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         if (Array.isArray(rule)) {
             return {
                 name: rule[0].trim(),
-                parameters: rule.slice(1)
+                parameters: rule.slice(1),
             }
         }
-        
+
         const name = rule.indexOf(':') > -1 ? rule.substr(0, rule.indexOf(':')) : rule
         const parameter = rule.indexOf(':') > -1 ? rule.substr(rule.indexOf(':') + 1) : []
         const parameters = this._parseParameters(name, parameter)
-    
+
         return {
             name: name.trim(),
-            parameters
+            parameters,
         }
     }
 
@@ -100,7 +100,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         if (rule.toLowerCase() === 'regex') {
             return [ parameter ]
         }
-    
+
         return parameter.split(',')
     }
 }

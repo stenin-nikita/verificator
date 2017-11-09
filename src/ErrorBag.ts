@@ -3,7 +3,7 @@ import { ErrorBagInterface } from './interfaces'
 export default class ErrorBag implements ErrorBagInterface {
     private _messages: { [key: string]: string[] } = {}
 
-    add(key: string, message: string): this {
+    public add(key: string, message: string): this {
         this._messages[key] = this._messages[key] || []
 
         if (this._messages[key].indexOf(message) === -1) {
@@ -13,7 +13,7 @@ export default class ErrorBag implements ErrorBagInterface {
         return this
     }
 
-    clear(key?: string): this {
+    public clear(key?: string): this {
         if (key != null && this.has(key)) {
             this._messages[key] = []
         } else {
@@ -23,17 +23,17 @@ export default class ErrorBag implements ErrorBagInterface {
         return this
     }
 
-    first(key: string): string {
+    public first(key: string): string {
         const [ messages ] = this.get(key)
-    
+
         return messages
     }
 
-    has(key: string): boolean {
+    public has(key: string): boolean {
         return this.get(key).length > 0
     }
 
-    get(key: string): string[] {
+    public get(key: string): string[] {
         if (key in this._messages) {
             return this._messages[key]
         }
@@ -41,17 +41,17 @@ export default class ErrorBag implements ErrorBagInterface {
         return []
     }
 
-    all(): string[] {
+    public all(): string[] {
         return Object.keys(this._messages).reduce<string[]>((value, key) => {
             return value.concat(this.get(key))
         }, [])
     }
 
-    any(): boolean {
+    public any(): boolean {
         return this.count() > 0
     }
 
-    count(): number {
+    public count(): number {
         return Object.keys(this._messages).reduce((value, key) => {
             return value + this._messages[key].length
         }, 0)

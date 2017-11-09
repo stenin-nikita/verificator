@@ -61,11 +61,11 @@ const messages = {
     string: ({ attribute }: any) => `The ${attribute} must be a string.`,
     url: ({ attribute }: any) => `The ${attribute} format is invalid.`,
 }
-  
+
 const locale = {
     name: 'en',
     messages,
-    attributes: {}
+    attributes: {},
 }
 
 export default locale
