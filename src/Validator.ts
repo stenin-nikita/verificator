@@ -128,7 +128,7 @@ export default class Validator implements ValidatorInterface {
         }
     
         for(let rule of this._rules[attribute]) {
-            const { name, parameters } = rule
+            const { name } = rule
 
             if (rules.indexOf(name) > -1) {
                 return rule
@@ -326,7 +326,7 @@ export default class Validator implements ValidatorInterface {
     }
 
     protected _getDisplayableParameters(rule: string, parameters: any[]): any[] {
-        if (dependentRules.indexOf(rule)) {
+        if (dependentRules.indexOf(rule) > -1) {
             return parameters.map(parameter => this._getDisplayableAttribute(parameter))
         }
 

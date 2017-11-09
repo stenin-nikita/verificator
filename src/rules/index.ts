@@ -20,7 +20,6 @@ import distinct from './distinct'
 import email from './email'
 import filled from './filled'
 import in_array from './in_array' 
-import index from './index' 
 import integer from './integer' 
 import In from './in' 
 import ip from './ip' 
@@ -69,7 +68,6 @@ const rules: any = {
     email,
     filled,
     in_array,
-    index,
     integer,
     in: In,
     ip,
