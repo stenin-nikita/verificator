@@ -1,2 +1,2 @@
 # Verificator
-Client-side and server-side javascript validator library
+Client and server-side validation javascript library
