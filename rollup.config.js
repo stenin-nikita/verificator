@@ -18,7 +18,7 @@ const config = {
     input: 'es/index.js',
     output: {
         file: `dist/${name}.js`,
-        name: 'verificator',
+        name: 'Verificator',
         format: 'umd',
         exports: 'named',
         banner
@@ -47,5 +47,5 @@ if (env === 'production') {
         })
     )
 }
-  
+
 export default config

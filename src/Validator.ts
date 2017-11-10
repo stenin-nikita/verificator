@@ -24,8 +24,8 @@ const dependentRules = [
 ]
 
 const defaultLocale = {
-    name: 'default',
-    messages: {}
+    name: '__empty__',
+    messages: {},
 }
 
 let RULES = defaultRules

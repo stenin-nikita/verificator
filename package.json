@@ -1,6 +1,6 @@
 {
   "name": "verificator",
-  "version": "0.0.2",
+  "version": "1.0.0-beta.0",
   "description": "Client and server-side validation javascript library",
   "keywords": [
     "validation",
@@ -21,22 +21,21 @@
   "unpkg": "dist/verificator.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
-  "typings": "typings/index.d.ts",
   "files": [
     "dist",
     "lib",
     "es",
     "src",
-    "typings",
     "tests"
   ],
   "scripts": {
-    "clean": "rimraf dist typings es lib",
+    "clean": "rimraf dist es lib",
     "build:es": "tsc",
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel es --out-dir lib",
     "build:umd": "cross-env BABEL_ENV=umd NODE_ENV=development rollup -c",
     "build:umd:min": "cross-env BABEL_ENV=umd NODE_ENV=production rollup -c",
-    "build": "npm run clean && npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
+    "build:locale": "cross-env BABEL_ENV=umd NODE_ENV=production rollup -c rollup.locale.js",
+    "build": "npm run clean && npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run build:locale",
     "lint": "tslint -p tsconfig.json src/*.ts src/**/*.ts",
     "test": "jest",
     "cover": "jest --coverage"

@@ -3,7 +3,6 @@
     "rootDir": "src",
     "outDir": "es",
     "declaration": true,
-    "declarationDir": "typings",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noFallthroughCasesInSwitch": true,
@@ -17,7 +16,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false
   },
-  "files": [
-    "src/index.ts"
-  ]
+  "include": ["src"],
+  "exclude": ["tests"]
 }

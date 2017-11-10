@@ -1,4 +1,6 @@
-const messages = {
+export const name = 'ru'
+
+export const messages = {
     accepted: ({ attribute }: any) => `Вы должны принять ${attribute}.`,
     after: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата после ${date}.`,
     after_or_equal: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата после или равняться ${date}.`,
@@ -61,10 +63,3 @@ const messages = {
     string: ({ attribute }: any) => `Поле ${attribute} должно быть строкой.`,
     url: ({ attribute }: any) => `Поле ${attribute} имеет ошибочный формат.`,
 }
-
-const locale = {
-    name: 'ru',
-    messages,
-}
-
-export default locale
