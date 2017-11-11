@@ -1,13 +1,9 @@
 import {
     Rule,
-    Rules,
     Locale,
-    InputRules,
-    LocaleMessages,
-    ValidationData,
-    ErrorBagInterface,
+    Messages,
+    Collection,
     ValidatorInterface,
-    ImplicitAttributes,
 } from './types'
 import deepmerge from 'deepmerge'
 import dataGet from './helpers/dataGet'
@@ -34,21 +30,24 @@ let RULES = defaultRules
 let LOCALE = defaultLocale
 
 export default class Validator implements ValidatorInterface {
-    protected _data: ValidationData
+    protected _data: Collection<any>
 
-    protected _rules: Rules
+    protected _rules: Collection<Rule[]>
 
-    protected _initialRules: InputRules
+    protected _initialRules: Collection<string|string[]>
 
-    protected _implicitAttributes: ImplicitAttributes
+    protected _implicitAttributes: Collection<string[]>
 
     protected _translator: Translator
 
-    protected _errors: ErrorBagInterface
+    protected _errors: ErrorBag
 
-    protected _RULES: any
+    protected _RULES: Collection<Function>
 
-    public static make(data: ValidationData, rules: InputRules, messages: any = {}, attributes: any = {}): Validator {
+    public static make(
+        data: Collection<any>, rules: Collection<string|string[]>,
+        messages: Messages = {}, attributes: Collection<string> = {},
+    ): Validator {
         return new Validator(data, rules, messages, attributes)
     }
 
@@ -64,7 +63,10 @@ export default class Validator implements ValidatorInterface {
         RULES[name] = func
     }
 
-    constructor(data: ValidationData, rules: InputRules, messages: any = {}, attributes: any = {}) {
+    constructor(
+        data: Collection<any>, rules: Collection<string|string[]>,
+        messages: Messages = {}, attributes: Collection<string> = {},
+    ) {
         this._translator = new Translator(LOCALE, messages, attributes)
         this._data = this._parseData(data)
 
@@ -74,7 +76,7 @@ export default class Validator implements ValidatorInterface {
         this._RULES = { ...defaultRules }
     }
 
-    get errors(): ErrorBagInterface {
+    get errors(): ErrorBag {
         return this._errors
     }
 
@@ -101,18 +103,18 @@ export default class Validator implements ValidatorInterface {
         return Promise.all(promises).then(results => results.every(result => result))
     }
 
-    public setData(data: ValidationData): this {
+    public setData(data: Collection<any>): this {
         this._data = this._parseData(data)
         this.setRules(this._initialRules)
 
         return this
     }
 
-    public getData(): ValidationData {
+    public getData(): Collection<any> {
         return this._data
     }
 
-    public setRules(rules: InputRules): this {
+    public setRules(rules: Collection<string|string[]>): this {
         this._initialRules = rules
         this._rules = {}
 
@@ -121,7 +123,7 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    public addRules(rules: InputRules): this {
+    public addRules(rules: Collection<string|string[]>): this {
         this._initialRules = deepmerge(this._initialRules || {}, rules)
 
         const response = (new ValidationRuleParser(this._data)).parse(this._initialRules)
@@ -132,7 +134,7 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    public getRules(): Rules {
+    public getRules(): Collection<Rule[]> {
         return this._rules
     }
 
@@ -174,12 +176,6 @@ export default class Validator implements ValidatorInterface {
         return attribute
     }
 
-    public setLocale(locale?: Locale): this {
-        this._translator.setLocale(locale || defaultLocale)
-
-        return this
-    }
-
     public extend(name: string, func: Function): this {
         if (typeof func !== 'function') {
             throw new TypeError(`The validator of rule '${name}' must be a function`)
@@ -190,25 +186,25 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    public setCustomMessages(messages: LocaleMessages = {}): this {
+    public setCustomMessages(messages?: Messages): this {
         this._translator.setCustomMessages(messages)
 
         return this
     }
 
-    public addCustomMessages(messages: LocaleMessages = {}): this {
+    public addCustomMessages(messages?: Messages): this {
         this._translator.addCustomMessages(messages)
 
         return this
     }
 
-    public setAtributeNames(attributes: { [key: string]: string } = {}): this {
+    public setAttributeNames(attributes?: Collection<string>): this {
         this._translator.setCustomAttributes(attributes)
 
         return this
     }
 
-    public addAtributeNames(attributes: { [key: string]: string } = {}): this {
+    public addAttributeNames(attributes?: Collection<string>): this {
         this._translator.addCustomAttributes(attributes)
 
         return this

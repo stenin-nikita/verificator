@@ -1,7 +1,7 @@
-import { ErrorBagInterface } from './types'
+import { Collection, ErrorBagInterface } from './types'
 
 export default class ErrorBag implements ErrorBagInterface {
-    private _messages: { [key: string]: string[] } = {}
+    private _messages: Collection<string[]> = {}
 
     public add(key: string, message: string): this {
         this._messages[key] = this._messages[key] || []

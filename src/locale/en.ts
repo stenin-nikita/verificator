@@ -55,3 +55,5 @@ export const messages = {
     string: ({ attribute }: any) => `The ${attribute} must be a string.`,
     url: ({ attribute }: any) => `The ${attribute} format is invalid.`,
 }
+
+export const attributes = {}

@@ -1,20 +1,21 @@
 import {
     Locale,
-    LocaleMessage,
-    LocaleMessages,
-    LocaleMessageParameters,
+    Message,
+    Messages,
+    Collection,
+    MessageParameters,
 } from './types'
 import is from './helpers/is'
 import flattenData from './helpers/flattenData'
 
 export default class Translator {
     protected _locale: string
-    protected _messages: { [key: string]: LocaleMessage }
-    protected _attributes: { [key: string]: string }
-    protected _customMessages: { [key: string]: LocaleMessage }
-    protected _customAttributes: { [key: string]: string }
+    protected _messages: Collection<Message>
+    protected _attributes: Collection<string>
+    protected _customMessages: Collection<Message>
+    protected _customAttributes: Collection<string>
 
-    constructor(locale: Locale, messages: LocaleMessages = {}, attributes: { [key: string]: string } = {}) {
+    constructor(locale: Locale, messages?: Messages, attributes?: Collection<string>) {
         this.setLocale(locale)
         this.setCustomMessages(messages)
         this.setCustomAttributes(attributes)
@@ -22,35 +23,35 @@ export default class Translator {
 
     public setLocale(locale: Locale) {
         this._locale = locale.name
-        this._messages = flattenData(locale.messages || {})
+        this._messages = flattenData(locale.messages)
         this._attributes = locale.attributes || {}
     }
 
-    public setCustomMessages(messages: LocaleMessages = {}): this {
+    public setCustomMessages(messages?: Messages): this {
         this._customMessages = {}
 
         return this.addCustomMessages(messages)
     }
 
-    public addCustomMessages(messages: LocaleMessages = {}): this {
+    public addCustomMessages(messages?: Messages): this {
         this._customMessages = {
             ...this._customMessages,
-            ...flattenData(messages),
+            ...flattenData(messages || {}),
         }
 
         return this
     }
 
-    public setCustomAttributes(attributes: { [key: string]: string } = {}): this {
+    public setCustomAttributes(attributes?: Collection<string>): this {
         this._customAttributes = {}
 
         return this.addCustomAttributes(attributes)
     }
 
-    public addCustomAttributes(attributes: { [key: string]: string } = {}): this {
+    public addCustomAttributes(attributes?: Collection<string>): this {
         this._customAttributes = {
             ...this._customAttributes,
-            ...attributes,
+            ...(attributes || {}),
         }
 
         return this
@@ -80,7 +81,7 @@ export default class Translator {
         return null
     }
 
-    protected _findMessage(source: { [key: string]: LocaleMessage }, parameters: LocaleMessageParameters, type: string): string|null {
+    protected _findMessage(source: Collection<Message>, parameters: MessageParameters, type: string): string|null {
         const keys = [
             `${parameters.attribute}.${parameters.rule}:${type}`,
             `${parameters.attribute}.${parameters.rule}`,

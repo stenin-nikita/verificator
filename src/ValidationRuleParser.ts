@@ -1,26 +1,22 @@
 import {
     Rule,
-    Rules,
-    InputRule,
-    InputRules,
-    ValidationData,
-    ImplicitAttributes,
+    Collection,
     ValidationRuleParserInterface,
 } from './types'
 import dataGet from './helpers/dataGet'
 
 export default class ValidationRuleParser implements ValidationRuleParserInterface {
-    public data: ValidationData
+    public data: Collection<any>
 
-    public rules: Rules = {}
+    public rules: Collection<Rule[]> = {}
 
-    public implicitAttributes: ImplicitAttributes = {}
+    public implicitAttributes: Collection<string[]> = {}
 
-    constructor(data: ValidationData) {
+    constructor(data: Collection<any>) {
         this.data = data
     }
 
-    public parse(rules: InputRules): this {
+    public parse(rules: Collection<string|string[]>): this {
         this.rules = {}
         this.implicitAttributes = {}
 
@@ -34,7 +30,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
     /**
      * Private methods
      */
-    protected _explodeRules(attribute: string, rule: [string, InputRule]) {
+    protected _explodeRules(attribute: string, rule: [string, string|string[]]) {
         if (attribute.indexOf('*') > -1) {
             this._explodeWildcardRules(attribute, rule)
         } else {
@@ -49,7 +45,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         }
     }
 
-    protected _explodeWildcardRules(attribute: string, rule: [string, InputRule]) {
+    protected _explodeWildcardRules(attribute: string, rule: [string, string|string[]]) {
         const path = attribute.substr(0, attribute.indexOf('*') - 1)
         const value = dataGet(this.data, path)
 
@@ -66,7 +62,7 @@ export default class ValidationRuleParser implements ValidationRuleParserInterfa
         }
     }
 
-    protected _parseRules(rules: InputRule): Rule[] {
+    protected _parseRules(rules: string|string[]): Rule[] {
         if (typeof rules === 'string') {
             rules = rules.split('|')
         }

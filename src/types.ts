@@ -1,32 +1,37 @@
+export interface Collection<T> {
+    [key: string]: T
+}
+
 export interface Rule {
     name: string
     parameters: any[]
 }
 
-export interface Rules {
-    [key: string]: Rule[]
+export interface MessageParameters {
+    rule: string
+    attribute: string
+    value: any
+    parameters: any[]
 }
 
-export type InputRule = string | string[]
+export type Message = string|((parameters: MessageParameters) => string)
 
-export interface InputRules {
-    [key: string]: InputRule
+export interface Messages {
+    [key: string]: Message | Messages
 }
 
-export interface ImplicitAttributes {
-    [key: string]: string[]
-}
-
-export interface ValidationData {
-    [key: string]: any
+export interface Locale {
+    name: string
+    messages: Messages,
+    attributes?: Collection<string>
 }
 
 export interface ValidationRuleParserInterface {
-    data: ValidationData
-    rules: Rules
-    implicitAttributes: ImplicitAttributes
+    data: Collection<any>
+    rules: Collection<Rule[]>
+    implicitAttributes: Collection<string[]>
 
-    parse(rules: InputRules): this
+    parse(rules: Collection<string|string[]>): this
 }
 
 export interface ErrorBagInterface {
@@ -52,15 +57,15 @@ export interface ValidatorInterface {
 
     passes(name?: string): Promise<boolean>
 
-    setData(data: ValidationData): this
+    setData(data: Collection<any>): this
 
-    getData(): ValidationData
+    getData(): Collection<any>
 
-    setRules(rules: InputRules): this
+    setRules(rules: Collection<string|string[]>): this
 
-    addRules(rules: InputRules): this
+    addRules(rules: Collection<string|string[]>): this
 
-    getRules(): Rules
+    getRules(): Collection<Rule[]>
 
     hasRule(attribute: string, rules: string|string[]): boolean
 
@@ -70,33 +75,13 @@ export interface ValidatorInterface {
 
     getPrimaryAttribute(attribute: string): string
 
-    setLocale(locale?: Locale): this
-
     extend(name: string, func: Function): this
 
-    // setAttributeNames(attributes: { [key: string]: string }): this
+    setCustomMessages(messages: Messages): this
 
-    // addAttributeNames(attributes: { [key: string]: string }): this
+    addCustomMessages(messages: Messages): this
 
-    // setCustomMessages(messages: LocaleMessages): this
-}
+    setAttributeNames(attributes: Collection<string>): this
 
-export interface LocaleMessageParameters {
-    rule: string
-    attribute: string
-    value: any
-    parameters: any[]
-}
-
-export type LocaleMessage = string | ((parameters: LocaleMessageParameters) => string)
-
-export interface LocaleMessages {
-    [key: string]: LocaleMessage | { [type: string]: LocaleMessage }
-}
-
-export interface Locale {
-    name: string
-    messages: LocaleMessages,
-    custom?: any
-    attributes?: any
+    addAttributeNames(attributes: Collection<string>): this
 }

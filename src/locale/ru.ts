@@ -55,3 +55,5 @@ export const messages = {
     string: ({ attribute }: any) => `Поле ${attribute} должно быть строкой.`,
     url: ({ attribute }: any) => `Поле ${attribute} имеет ошибочный формат.`,
 }
+
+export const attributes = {}

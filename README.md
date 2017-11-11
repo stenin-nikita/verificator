@@ -32,7 +32,9 @@ npm install --save verificator
 <script crossorigin src="https://unpkg.com/verificator@latest/dist/locale/en.js"></script>
 <script>
 var locale = VerificatorLocale.en
-var validator = new Verificator.Validator(data, rules, locale)
+
+Verificator.Validator.setLocale(locale)
+var validator = new Verificator.Validator(data, rules)
 </script>
 ```
 
@@ -42,7 +44,8 @@ var validator = new Verificator.Validator(data, rules, locale)
 const Verificator = require('verificator')
 const locale = require('verificator/lib/locale/en')
 
-const validator = new Verificator.Validator(data, rules, locale)
+Verificator.Validator.setLocale(locale)
+const validator = new Verificator.Validator(data, rules)
 ```
 
 ### Using a ES or TypeScript
@@ -51,7 +54,8 @@ const validator = new Verificator.Validator(data, rules, locale)
 import { Validator } from 'verificator/es'
 import * as locale from 'verificator/es/locale/en'
 
-const validator = new Validator(data, rules, locale)
+Validator.setLocale(locale)
+const validator = new Validator(data, rules)
 ```
 
 ## Example
@@ -59,6 +63,8 @@ const validator = new Validator(data, rules, locale)
 ```typescript
 import { Validator } from 'verificator/es'
 import * as locale from 'verificator/es/locale/en'
+
+Validator.setLocale(locale)
 
 const data = {
     firstName: 'Nikita',
@@ -72,7 +78,7 @@ const rules = {
     email: 'required|string|email'
 }
 
-const validator = new Validator(data, rules, locale)
+const validator = new Validator(data, rules)
 
 validator.passes().then(isValid => {
     if (isValid) {
