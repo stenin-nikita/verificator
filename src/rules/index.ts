@@ -42,6 +42,7 @@ import required_without from './required_without'
 import required_with from './required_with'
 import same from './same'
 import size from './size'
+import sometimes from './sometimes'
 import string from './string'
 import url from './url'
 const rules: any = {
@@ -89,6 +90,7 @@ const rules: any = {
     required_with,
     same,
     size,
+    sometimes,
     string,
     url,
 }

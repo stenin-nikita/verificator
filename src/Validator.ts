@@ -44,6 +44,8 @@ export default class Validator implements ValidatorInterface {
 
     protected _RULES: Collection<Function>
 
+    protected _after: Function[] = []
+
     public static make(
         data: Collection<any>, rules: Collection<string|string[]>,
         messages: Messages = {}, attributes: Collection<string> = {},
@@ -91,6 +93,10 @@ export default class Validator implements ValidatorInterface {
         }
 
         for (let attribute of attributes) {
+            if (!this._passesOptionalCheck(attribute)) {
+                continue
+            }
+
             const rules = this._rules[attribute]
 
             for (let rule of rules) {
@@ -100,7 +106,13 @@ export default class Validator implements ValidatorInterface {
             }
         }
 
-        return Promise.all(promises).then(results => results.every(result => result))
+        return Promise.all(promises).then(results => results.every(result => result)).then(result => {
+            for (let callback of this._after) {
+                callback()
+            }
+
+            return result
+        })
     }
 
     public setData(data: Collection<any>): this {
@@ -206,6 +218,14 @@ export default class Validator implements ValidatorInterface {
 
     public addAttributeNames(attributes?: Collection<string>): this {
         this._translator.addCustomAttributes(attributes)
+
+        return this
+    }
+
+    public after(callback: Function): this {
+        this._after.push(() => {
+            callback(this)
+        })
 
         return this
     }
@@ -363,5 +383,13 @@ export default class Validator implements ValidatorInterface {
         }
 
         return 'string'
+    }
+
+    protected _passesOptionalCheck(attribute: string): boolean {
+        if (!this.hasRule(attribute, 'sometimes')) {
+            return true
+        }
+
+        return dataGet(this._data, attribute, '__MISSING__') !== '__MISSING__'
     }
 }
