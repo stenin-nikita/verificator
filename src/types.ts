@@ -69,4 +69,34 @@ export interface ValidatorInterface {
     getValue(attribute: string): any
 
     getPrimaryAttribute(attribute: string): string
+
+    setLocale(locale?: Locale): this
+
+    extend(name: string, func: Function): this
+
+    // setAttributeNames(attributes: { [key: string]: string }): this
+
+    // addAttributeNames(attributes: { [key: string]: string }): this
+
+    // setCustomMessages(messages: LocaleMessages): this
+}
+
+export interface LocaleMessageParameters {
+    rule: string
+    attribute: string
+    value: any
+    parameters: any[]
+}
+
+export type LocaleMessage = string | ((parameters: LocaleMessageParameters) => string)
+
+export interface LocaleMessages {
+    [key: string]: LocaleMessage | { [type: string]: LocaleMessage }
+}
+
+export interface Locale {
+    name: string
+    messages: LocaleMessages,
+    custom?: any
+    attributes?: any
 }

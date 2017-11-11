@@ -1,7 +1,9 @@
 import {
     Rule,
     Rules,
+    Locale,
     InputRules,
+    LocaleMessages,
     ValidationData,
     ErrorBagInterface,
     ValidatorInterface,
@@ -23,7 +25,7 @@ const dependentRules = [
     'before_or_equal', 'after_or_equal',
 ]
 
-const defaultLocale = {
+const defaultLocale: Locale = {
     name: '__empty__',
     messages: {},
 }
@@ -46,11 +48,11 @@ export default class Validator implements ValidatorInterface {
 
     protected _RULES: any
 
-    public static make(data: ValidationData, rules: InputRules, locale: any = LOCALE): Validator {
-        return new Validator(data, rules, locale)
+    public static make(data: ValidationData, rules: InputRules, messages: any = {}, attributes: any = {}): Validator {
+        return new Validator(data, rules, messages, attributes)
     }
 
-    public static setLocale(locale?: any) {
+    public static setLocale(locale?: Locale) {
         LOCALE = locale || defaultLocale
     }
 
@@ -62,8 +64,8 @@ export default class Validator implements ValidatorInterface {
         RULES[name] = func
     }
 
-    constructor(data: ValidationData, rules: InputRules, locale: any = LOCALE) {
-        this._translator = new Translator(locale)
+    constructor(data: ValidationData, rules: InputRules, messages: any = {}, attributes: any = {}) {
+        this._translator = new Translator(LOCALE, messages, attributes)
         this._data = this._parseData(data)
 
         this.setRules(rules)
@@ -172,8 +174,8 @@ export default class Validator implements ValidatorInterface {
         return attribute
     }
 
-    public setLocale(locale?: any): this {
-        this._translator = new Translator(locale || defaultLocale)
+    public setLocale(locale?: Locale): this {
+        this._translator.setLocale(locale || defaultLocale)
 
         return this
     }
@@ -184,6 +186,30 @@ export default class Validator implements ValidatorInterface {
         }
 
         this._RULES[name] = func
+
+        return this
+    }
+
+    public setCustomMessages(messages: LocaleMessages = {}): this {
+        this._translator.setCustomMessages(messages)
+
+        return this
+    }
+
+    public addCustomMessages(messages: LocaleMessages = {}): this {
+        this._translator.addCustomMessages(messages)
+
+        return this
+    }
+
+    public setAtributeNames(attributes: { [key: string]: string } = {}): this {
+        this._translator.setCustomAttributes(attributes)
+
+        return this
+    }
+
+    public addAtributeNames(attributes: { [key: string]: string } = {}): this {
+        this._translator.addCustomAttributes(attributes)
 
         return this
     }
@@ -313,7 +339,7 @@ export default class Validator implements ValidatorInterface {
         for (let name of expectedAttributes) {
             const line = this._translator.getAttribute(name)
 
-            if (line) {
+            if (line !== null) {
                 return line
             }
         }
@@ -322,7 +348,7 @@ export default class Validator implements ValidatorInterface {
             return attribute
         }
 
-        return String(attribute).replace(/_/g, ' ')
+        return String(attribute).toLowerCase().replace(/_/g, ' ')
     }
 
     protected _getDisplayableParameters(rule: string, parameters: any[]): any[] {

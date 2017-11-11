@@ -1,51 +1,108 @@
+import {
+    Locale,
+    LocaleMessage,
+    LocaleMessages,
+    LocaleMessageParameters,
+} from './types'
+import is from './helpers/is'
+import flattenData from './helpers/flattenData'
+
 export default class Translator {
     protected _locale: string
-    protected _messages: any
-    protected _attributes: any
-    protected _customMessages: any
-    protected _customAttributes: any
+    protected _messages: { [key: string]: LocaleMessage }
+    protected _attributes: { [key: string]: string }
+    protected _customMessages: { [key: string]: LocaleMessage }
+    protected _customAttributes: { [key: string]: string }
 
-    constructor(locale: any, customMessages: any = {}, customAttributes: any = {}) {
+    constructor(locale: Locale, messages: LocaleMessages = {}, attributes: { [key: string]: string } = {}) {
+        this.setLocale(locale)
+        this.setCustomMessages(messages)
+        this.setCustomAttributes(attributes)
+    }
+
+    public setLocale(locale: Locale) {
         this._locale = locale.name
-        this._messages = locale.messages
+        this._messages = flattenData(locale.messages || {})
         this._attributes = locale.attributes || {}
+    }
 
-        this._customMessages = customMessages
-        this._customAttributes = customAttributes
+    public setCustomMessages(messages: LocaleMessages = {}): this {
+        this._customMessages = {}
+
+        return this.addCustomMessages(messages)
+    }
+
+    public addCustomMessages(messages: LocaleMessages = {}): this {
+        this._customMessages = {
+            ...this._customMessages,
+            ...flattenData(messages),
+        }
+
+        return this
+    }
+
+    public setCustomAttributes(attributes: { [key: string]: string } = {}): this {
+        this._customAttributes = {}
+
+        return this.addCustomAttributes(attributes)
+    }
+
+    public addCustomAttributes(attributes: { [key: string]: string } = {}): this {
+        this._customAttributes = {
+            ...this._customAttributes,
+            ...attributes,
+        }
+
+        return this
     }
 
     public getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string): string {
-        const customMessage = this._getMessage(this._customMessages, rule, attribute, value, parameters, type)
+        for (let messages of [this._customMessages, this._messages]) {
+            let message = this._findMessage(messages, { rule, attribute, value, parameters }, type)
 
-        if (customMessage) {
-            return customMessage
-        }
-
-        const message = this._getMessage(this._messages, rule, attribute, value, parameters, type)
-
-        if (message) {
-            return message
+            if (message !== null) {
+                return message
+            }
         }
 
         return `Invalid value for field "${attribute}"`
     }
 
-    public getAttribute(attribute: string) {
-        const attributes = this._attributes
+    public getAttribute(attribute: string): string|null {
+        if (attribute in this._customAttributes) {
+            return this._customAttributes[attribute]
+        }
 
-        return attributes[attribute]
+        if (attribute in this._attributes) {
+            return this._attributes[attribute]
+        }
+
+        return null
     }
 
-    protected _getMessage(messages: any, rule: string, attribute: string, value: any, parameters: any[], type: string): string|null {
-        if (rule in messages) {
-            let trans = messages[rule]
+    protected _findMessage(source: { [key: string]: LocaleMessage }, parameters: LocaleMessageParameters, type: string): string|null {
+        const keys = [
+            `${parameters.attribute}.${parameters.rule}:${type}`,
+            `${parameters.attribute}.${parameters.rule}`,
+            `${parameters.rule}:${type}`,
+            parameters.rule,
+        ]
 
-            if (typeof trans === 'function') {
-                return trans({ attribute, value, rule, parameters })
-            }
+        for (let key of keys) {
+            for (let sourceKey of Object.keys(source)) {
+                if (is(sourceKey, key)) {
+                    const message = source[sourceKey]
 
-            if (type in trans) {
-                return trans[type]({ attribute, value, rule, parameters })
+                    if (typeof message === 'string') {
+                        return message
+                    }
+
+                    if (typeof message === 'function') {
+                        return message(parameters)
+                    }
+
+                    return null
+                }
             }
         }
 
