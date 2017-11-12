@@ -14,7 +14,7 @@ export default class ErrorBag implements ErrorBagInterface {
     }
 
     public clear(key?: string): this {
-        if (key != null && this.has(key)) {
+        if (key != null) {
             this._messages[key] = []
         } else {
             this._messages = {}

@@ -83,8 +83,6 @@ export default class Validator implements ValidatorInterface {
     }
 
     public passes(name?: string): Promise<boolean> {
-        this._errors = new ErrorBag()
-
         const promises: Promise<boolean>[] = []
         const attributes = this._filterAttributes(name)
 
@@ -97,9 +95,9 @@ export default class Validator implements ValidatorInterface {
                 continue
             }
 
-            const rules = this._rules[attribute]
+            this.errors.clear(attribute)
 
-            for (let rule of rules) {
+            for (let rule of this._rules[attribute]) {
                 const promise = this._validateAttribute(attribute, rule)
 
                 promises.push(promise)
