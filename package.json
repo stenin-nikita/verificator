@@ -1,7 +1,7 @@
 {
   "name": "verificator",
-  "version": "1.0.0-beta.3",
-  "description": "Client and server-side validation javascript library",
+  "version": "1.0.0-beta.4",
+  "description": "Client and server-side validation JavaScript library",
   "keywords": [
     "validation",
     "validator",
