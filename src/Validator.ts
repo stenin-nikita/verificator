@@ -95,7 +95,7 @@ export default class Validator implements ValidatorInterface {
                 continue
             }
 
-            this.errors.clear(attribute)
+            this.errors.remove(attribute)
 
             for (let rule of this._rules[attribute]) {
                 const promise = this._validateAttribute(attribute, rule)
