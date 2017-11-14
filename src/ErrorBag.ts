@@ -3,6 +3,14 @@ import { Collection, ErrorBagInterface } from './types'
 export default class ErrorBag implements ErrorBagInterface {
     private _messages: Collection<string[]> = {}
 
+    constructor(messages: Collection<string[]> = {}) {
+        Object.keys(messages).forEach(key => {
+            messages[key].forEach(message => {
+                this.add(key, message)
+            })
+        })
+    }
+
     public add(key: string, message: string): this {
         this._messages[key] = this._messages[key] || []
 
@@ -13,12 +21,16 @@ export default class ErrorBag implements ErrorBagInterface {
         return this
     }
 
-    public clear(key?: string): this {
-        if (key != null) {
-            this._messages[key] = []
-        } else {
-            this._messages = {}
+    public remove(key: string): this {
+        if (key in this._messages) {
+            delete this._messages[key]
         }
+
+        return this
+    }
+
+    public clear(): this {
+        this._messages = {}
 
         return this
     }
