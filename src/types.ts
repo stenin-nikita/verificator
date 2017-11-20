@@ -35,11 +35,11 @@ export interface ValidationRuleParserInterface {
 }
 
 export interface ErrorBagInterface {
-    add(key: string, message: string): this
+    add(key: string, message: string): ErrorBagInterface
 
-    remove(key: string): this
+    remove(key: string): ErrorBagInterface
 
-    clear(): this
+    clear(): ErrorBagInterface
 
     first(key: string): string
 

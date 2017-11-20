@@ -1,6 +1,6 @@
 {
   "name": "verificator",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "description": "Client and server-side validation JavaScript library",
   "keywords": [
     "validation",
@@ -43,6 +43,7 @@
   "dependencies": {
     "date-fns": "^2.0.0-alpha.7",
     "deepmerge": "^2.0.1",
+    "redux": "^3.7.2",
     "validator": "^8.1.0"
   },
   "devDependencies": {
@@ -81,11 +82,12 @@
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-uglify": "^2.0.1",
     "ts-jest": "^21.2.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1"
-  },  
+  },
   "jest": {
     "globals": {
       "ts-jest": {

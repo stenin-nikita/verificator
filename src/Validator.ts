@@ -3,16 +3,21 @@ import {
     Locale,
     Messages,
     Collection,
+    ErrorBagInterface,
     ValidatorInterface,
 } from './types'
+import { createStore, Store, AnyAction } from 'redux'
+import reducer from './reducers'
 import deepmerge from 'deepmerge'
 import dataGet from './helpers/dataGet'
 import dataSet from './helpers/dataSet'
 import escapeString from './helpers/escapeString'
 import ValidationRuleParser from './ValidationRuleParser'
 import Translator from './Translator'
-import ErrorBag from './ErrorBag'
+import createErrorBag from './createErrorBag'
 import defaultRules from './rules'
+
+import { updateData } from './actions'
 
 const dependentRules = [
     'required_with', 'required_with_all', 'required_without',
@@ -30,8 +35,6 @@ let RULES = defaultRules
 let LOCALE = defaultLocale
 
 export default class Validator implements ValidatorInterface {
-    protected _data: Collection<any>
-
     protected _rules: Collection<Rule[]>
 
     protected _initialRules: Collection<string|string[]>
@@ -40,11 +43,13 @@ export default class Validator implements ValidatorInterface {
 
     protected _translator: Translator
 
-    protected _errors: ErrorBag
+    protected _errors: ErrorBagInterface
 
     protected _RULES: Collection<Function>
 
     protected _after: Function[] = []
+
+    protected _store: Store<AnyAction>
 
     public static make(
         data: Collection<any>, rules: Collection<string|string[]>,
@@ -69,16 +74,18 @@ export default class Validator implements ValidatorInterface {
         data: Collection<any>, rules: Collection<string|string[]>,
         messages: Messages = {}, attributes: Collection<string> = {},
     ) {
-        this._translator = new Translator(LOCALE, messages, attributes)
-        this._data = this._parseData(data)
+        const store = createStore(reducer)
+        this._store = store
+
+        this._errors = createErrorBag(store)
+        store.dispatch(updateData(this._parseData(data)))
 
         this.setRules(rules)
-
-        this._errors = new ErrorBag()
         this._RULES = { ...defaultRules }
+        this._translator = new Translator(LOCALE, messages, attributes)
     }
 
-    get errors(): ErrorBag {
+    get errors(): ErrorBagInterface {
         return this._errors
     }
 
@@ -114,14 +121,16 @@ export default class Validator implements ValidatorInterface {
     }
 
     public setData(data: Collection<any>): this {
-        this._data = this._parseData(data)
+        this._store.dispatch(updateData(this._parseData(data)))
         this.setRules(this._initialRules)
 
         return this
     }
 
     public getData(): Collection<any> {
-        return this._data
+        const { data } = this._store.getState()
+
+        return { ...data }
     }
 
     public setRules(rules: Collection<string|string[]>): this {
@@ -134,9 +143,11 @@ export default class Validator implements ValidatorInterface {
     }
 
     public addRules(rules: Collection<string|string[]>): this {
+        const { data } = this._store.getState()
+
         this._initialRules = deepmerge(this._initialRules || {}, rules)
 
-        const response = (new ValidationRuleParser(this._data)).parse(this._initialRules)
+        const response = (new ValidationRuleParser(data)).parse(this._initialRules)
 
         this._rules = response.rules,
         this._implicitAttributes = response.implicitAttributes
@@ -173,7 +184,9 @@ export default class Validator implements ValidatorInterface {
     }
 
     public getValue(attribute: string): any {
-        return dataGet(this._data, attribute)
+        const { data } = this._store.getState()
+
+        return dataGet(data, attribute)
     }
 
     public getPrimaryAttribute(attribute: string): string {
@@ -388,6 +401,8 @@ export default class Validator implements ValidatorInterface {
             return true
         }
 
-        return dataGet(this._data, attribute, '__MISSING__') !== '__MISSING__'
+        const { data } = this._store.getState()
+
+        return dataGet(data, attribute, '__MISSING__') !== '__MISSING__'
     }
 }

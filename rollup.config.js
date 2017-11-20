@@ -1,5 +1,6 @@
 import commonjs from 'rollup-plugin-commonjs'
 import nodeResolve from 'rollup-plugin-node-resolve'
+import replace from 'rollup-plugin-replace'
 import babel from 'rollup-plugin-babel'
 import uglify from 'rollup-plugin-uglify'
 
@@ -21,17 +22,20 @@ const config = {
         name: 'Verificator',
         format: 'umd',
         exports: 'named',
-        banner
+        banner,
     },
     plugins: [
         nodeResolve({
             jsnext: true,
             browser: true,
             main: true,
-            module: true
+            module: true,
         }),
         commonjs(),
         babel(),
+        replace({
+            'process.env.NODE_ENV': env !== 'production' ? JSON.stringify('development') : JSON.stringify('env'),
+        }),
     ],
 }
 
@@ -42,8 +46,8 @@ if (env === 'production') {
                 pure_getters: true,
                 unsafe: true,
                 unsafe_comps: true,
-                warnings: false
-            }
+                warnings: false,
+            },
         })
     )
 }
