@@ -17,7 +17,7 @@ import Translator from './Translator'
 import createErrorBag from './createErrorBag'
 import defaultRules from './rules'
 
-import { updateData } from './actions'
+import { updateData, startValidate, stopValidate } from './actions'
 
 const dependentRules = [
     'required_with', 'required_with_all', 'required_without',
@@ -51,10 +51,7 @@ export default class Validator implements ValidatorInterface {
 
     protected _store: Store<AnyAction>
 
-    public static make(
-        data: Collection<any>, rules: Collection<string|string[]>,
-        messages: Messages = {}, attributes: Collection<string> = {},
-    ): Validator {
+    public static make(data: Collection<any>, rules: Collection<string|string[]>, messages: Messages = {}, attributes: Collection<string> = {}): Validator {
         return new Validator(data, rules, messages, attributes)
     }
 
@@ -70,10 +67,7 @@ export default class Validator implements ValidatorInterface {
         RULES[name] = func
     }
 
-    constructor(
-        data: Collection<any>, rules: Collection<string|string[]>,
-        messages: Messages = {}, attributes: Collection<string> = {},
-    ) {
+    constructor(data: Collection<any>, rules: Collection<string|string[]>, messages: Messages = {}, attributes: Collection<string> = {}) {
         const store = createStore(reducer)
         this._store = store
 
@@ -90,28 +84,43 @@ export default class Validator implements ValidatorInterface {
     }
 
     public passes(name?: string): Promise<boolean> {
+        this._store.dispatch(startValidate())
         const promises: Promise<boolean>[] = []
         const attributes = this._filterAttributes(name)
 
         if (name && attributes.length === 0) {
+            this._store.dispatch(stopValidate())
             return Promise.reject(new Error(`Validating a non-existent attribute: "${name}".`))
         }
 
+        let queues = []
         for (let attribute of attributes) {
             if (!this._passesOptionalCheck(attribute)) {
                 continue
             }
 
             this.errors.remove(attribute)
+            let queue = []
 
             for (let rule of this._rules[attribute]) {
-                const promise = this._validateAttribute(attribute, rule)
+                queue.push(((attribute, rule) => {
+                    return (result: boolean): boolean|Promise<boolean> => {
+                        if (result === true) {
+                            return this._validateAttribute(attribute, rule)
+                        }
 
-                promises.push(promise)
+                        return result
+                    }
+                })(attribute, rule))
+
+                queues.push(queue)
             }
+
+            promises.push(queue.reduce((p, q) => p.then(q), Promise.resolve(true)))
         }
 
         return Promise.all(promises).then(results => results.every(result => result)).then(result => {
+            this._store.dispatch(stopValidate())
             for (let callback of this._after) {
                 callback()
             }

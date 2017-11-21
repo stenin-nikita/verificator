@@ -16,8 +16,9 @@ export default function reducer(state: Collection<string[]> = initialState, acti
         }
     } else if (type === ActionTypes.REMOVE_ERROR) {
         const { key } = action.payload
-
-        return { ...state, [key]: [] }
+        if (key in state) {
+            return { ...state, [key]: [] }
+        }
     } else if (type === ActionTypes.CLEAR_ERRORS) {
         return {}
     }
