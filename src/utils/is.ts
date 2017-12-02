@@ -1,4 +1,4 @@
-import escapeString from './escapeString'
+import escape from './escape'
 
 const is = (patterns: string|string[], value: string): boolean => {
     patterns = Array.isArray(patterns) ? patterns : [patterns]
@@ -13,7 +13,7 @@ const is = (patterns: string|string[], value: string): boolean => {
             return true
         }
 
-        const regex = new RegExp(`^${escapeString(pattern).replace(/\\\*/g, '.*')}$`, 'u')
+        const regex = new RegExp(`^${escape(pattern).replace(/\\\*/g, '.*')}$`, 'u')
 
         if (regex.test(value)) {
             return true

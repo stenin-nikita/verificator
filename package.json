@@ -109,8 +109,10 @@
     ],
     "collectCoverageFrom": [
       "src/**/*.ts",
+      "!src/index.ts",
+      "!src/types.ts",
       "!src/rules/index.ts",
-      "!src/index.ts"
+      "!src/locale/*.ts"
     ]
   }
 }

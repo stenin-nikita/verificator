@@ -1,6 +1,5 @@
-import requireParameterCount from '../helpers/requireParameterCount'
-import escapeString from '../helpers/escapeString'
-import flattenData from '../helpers/flattenData'
+import requireParameterCount from './helpers/requireParameterCount'
+import * as utils from '../utils'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
     requireParameterCount(1, parameters, 'in_array')
@@ -8,8 +7,8 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     const [ path ] = parameters
     const otherValues: any[] = []
     const explicitPath = path.split('*')[0].replace(/^\.|\.$/g, '') || null
-    const attributeData: any = flattenData(validator.getValue(explicitPath))
-    const regex = new RegExp(`^${escapeString(path).replace(/\\\*/g, '([^\.]+)')}`)
+    const attributeData: any = utils.flatten(validator.getValue(explicitPath))
+    const regex = new RegExp(`^${utils.escape(path).replace(/\\\*/g, '([^\.]+)')}`)
 
     Object.keys(attributeData).forEach(key => {
         if (regex.exec(`${explicitPath}.${key}`)) {

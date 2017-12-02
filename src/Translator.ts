@@ -1,65 +1,56 @@
-import {
-    Locale,
-    Message,
-    Messages,
-    Collection,
-    MessageParameters,
-} from './types'
-import is from './helpers/is'
-import flattenData from './helpers/flattenData'
+import { DEPENDENT_RULES } from './constants'
+import * as utils from './utils'
+import Validator from './Validator'
+import { Items, Locale, Message, MessageParameters, Messages } from './types'
 
 export default class Translator {
-    protected _locale: string
-    protected _messages: Collection<Message>
-    protected _attributes: Collection<string>
-    protected _customMessages: Collection<Message>
-    protected _customAttributes: Collection<string>
+    protected _validator: Validator
 
-    constructor(locale: Locale, messages?: Messages, attributes?: Collection<string>) {
+    protected _messages: Items<Message>
+
+    protected _attributes: Items<string>
+
+    protected _customMessages: Items<Message>
+
+    protected _customAttributes: Items<string>
+
+    constructor(locale: Locale, validator: Validator) {
+        this._validator = validator
+
         this.setLocale(locale)
-        this.setCustomMessages(messages)
-        this.setCustomAttributes(attributes)
+        this.setCustomMessages(locale.customMessages || {})
+        this.setCustomAttributes(locale.customAttributes || {})
     }
 
-    public setLocale(locale: Locale) {
-        this._locale = locale.name
-        this._messages = flattenData(locale.messages)
+    public setLocale(locale: Locale): this {
+        this._messages = utils.flatten(locale.messages)
         this._attributes = locale.attributes || {}
-    }
-
-    public setCustomMessages(messages?: Messages): this {
-        this._customMessages = {}
-
-        return this.addCustomMessages(messages)
-    }
-
-    public addCustomMessages(messages?: Messages): this {
-        this._customMessages = {
-            ...this._customMessages,
-            ...flattenData(messages || {}),
-        }
 
         return this
     }
 
-    public setCustomAttributes(attributes?: Collection<string>): this {
-        this._customAttributes = {}
+    public getAttribute(attribute: string): string|null {
+        const { _attributes, _customAttributes } = this
 
-        return this.addCustomAttributes(attributes)
-    }
-
-    public addCustomAttributes(attributes?: Collection<string>): this {
-        this._customAttributes = {
-            ...this._customAttributes,
-            ...(attributes || {}),
+        if (attribute in _customAttributes) {
+            return _customAttributes[attribute]
         }
 
-        return this
+        if (attribute in _attributes) {
+            return _attributes[attribute]
+        }
+
+        return null
     }
 
-    public getMessage(rule: string, attribute: string, value: any, parameters: any[], type: string): string {
-        for (let messages of [this._customMessages, this._messages]) {
-            let message = this._findMessage(messages, { rule, attribute, value, parameters }, type)
+    public getMessage(rule: string, attribute: string, value: any, parameters: any[]): string {
+        const { _messages, _customMessages } = this
+
+        attribute = this._getDisplayableAttribute(attribute)
+        parameters = this._getDisplayableParameters(rule, parameters)
+
+        for (let source of [_customMessages, _messages]) {
+            let message = this._findMessage(source, { rule, attribute, value, parameters })
 
             if (message !== null) {
                 return message
@@ -69,19 +60,39 @@ export default class Translator {
         return `Invalid value for field "${attribute}"`
     }
 
-    public getAttribute(attribute: string): string|null {
-        if (attribute in this._customAttributes) {
-            return this._customAttributes[attribute]
-        }
+    public setCustomMessages(messages?: Messages): this {
+        this._customMessages = utils.flatten(messages || {})
 
-        if (attribute in this._attributes) {
-            return this._attributes[attribute]
-        }
-
-        return null
+        return this
     }
 
-    protected _findMessage(source: Collection<Message>, parameters: MessageParameters, type: string): string|null {
+    public addCustomMessages(messages?: Messages): this {
+        this._customMessages = {
+            ...this._customMessages,
+            ...utils.flatten(messages || {}),
+        }
+
+        return this
+    }
+
+    public setCustomAttributes(attributes?: Items<string>): this {
+        this._customAttributes = attributes || {}
+
+        return this
+    }
+
+    public addCustomAttributes(attributes?: Items<string>): this {
+        this._customAttributes = {
+            ...this._customAttributes,
+            ...(attributes || {}),
+        }
+
+        return this
+    }
+
+    protected _findMessage(source: Items<string|Function>, parameters: MessageParameters): string|null {
+        const type = this._getAttributeType(parameters.attribute)
+
         const keys = [
             `${parameters.attribute}.${parameters.rule}:${type}`,
             `${parameters.attribute}.${parameters.rule}`,
@@ -91,7 +102,7 @@ export default class Translator {
 
         for (let key of keys) {
             for (let sourceKey of Object.keys(source)) {
-                if (is(sourceKey, key)) {
+                if (utils.is(sourceKey, key)) {
                     const message = source[sourceKey]
 
                     if (typeof message === 'string') {
@@ -108,5 +119,44 @@ export default class Translator {
         }
 
         return null
+    }
+
+    protected _getDisplayableAttribute(attribute: string): string {
+        const implicitAttributes = this._validator.getImplicitAttributes()
+        const primaryAttribute = this._validator.getPrimaryAttribute(attribute)
+
+        const expectedAttributes = attribute !== primaryAttribute ? [attribute, primaryAttribute] : [attribute]
+
+        for (let name of expectedAttributes) {
+            const line = this.getAttribute(name)
+
+            if (line !== null) {
+                return line
+            }
+        }
+
+        if (primaryAttribute in implicitAttributes) {
+            return attribute
+        }
+
+        return attribute.toLowerCase().replace(/_/g, ' ')
+    }
+
+    protected _getDisplayableParameters(rule: string, parameters: any[]): any[] {
+        if (DEPENDENT_RULES.indexOf(rule) > -1) {
+            return parameters.map(parameter => this._getDisplayableAttribute(parameter))
+        }
+
+        return parameters
+    }
+
+    protected _getAttributeType(attribute: string): string {
+        if (this._validator.hasRule(attribute, ['numeric', 'integer'])) {
+            return 'numeric'
+        } else if (this._validator.hasRule(attribute, ['array'])) {
+            return 'array'
+        }
+
+        return 'string'
     }
 }

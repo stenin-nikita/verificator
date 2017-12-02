@@ -1,206 +1,171 @@
-import {
-    Rule,
-    Locale,
-    Messages,
-    Collection,
-    ErrorBagInterface,
-    ValidatorInterface,
-} from './types'
-import { createStore, Store, AnyAction } from 'redux'
-import reducer from './reducers'
+import { setData, setRules, startValidate, stopValidate } from './actions'
+import { DEPENDENT_RULES, DEFAULT_LOCALE } from './constants'
+import DEFAULT_RULES from './rules'
 import deepmerge from 'deepmerge'
-import dataGet from './helpers/dataGet'
-import dataSet from './helpers/dataSet'
-import escapeString from './helpers/escapeString'
-import ValidationRuleParser from './ValidationRuleParser'
+import reducer from './reducer'
+import { createStore, applyMiddleware, Store } from 'redux'
+import ErrorBag from './ErrorBag'
 import Translator from './Translator'
-import createErrorBag from './createErrorBag'
-import defaultRules from './rules'
+import * as utils from './utils'
+import { IState, Rule, Items, Locale, Messages } from './types'
 
-import { updateData, startValidate, stopValidate } from './actions'
+let RULES = DEFAULT_RULES
+let LOCALE = DEFAULT_LOCALE
 
-const dependentRules = [
-    'required_with', 'required_with_all', 'required_without',
-    'required_without_all', 'required_if', 'required_unless',
-    'confirmed', 'same', 'different', 'before', 'after',
-    'before_or_equal', 'after_or_equal',
-]
-
-const defaultLocale: Locale = {
-    name: '__empty__',
-    messages: {},
-}
-
-let RULES = defaultRules
-let LOCALE = defaultLocale
-
-export default class Validator implements ValidatorInterface {
-    protected _rules: Collection<Rule[]>
-
-    protected _initialRules: Collection<string|string[]>
-
-    protected _implicitAttributes: Collection<string[]>
+export default class Validator {
+    protected _store: Store<IState>
 
     protected _translator: Translator
 
-    protected _errors: ErrorBagInterface
+    protected _errors: ErrorBag
 
-    protected _RULES: Collection<Function>
+    protected _listeners: Function[] = []
 
-    protected _after: Function[] = []
+    protected _rules: Items<Function> = {}
 
-    protected _store: Store<AnyAction>
-
-    public static make(data: Collection<any>, rules: Collection<string|string[]>, messages: Messages = {}, attributes: Collection<string> = {}): Validator {
-        return new Validator(data, rules, messages, attributes)
+    public static useLocale(locale?: Locale) {
+        LOCALE = locale || DEFAULT_LOCALE
     }
 
-    public static setLocale(locale?: Locale) {
-        LOCALE = locale || defaultLocale
-    }
-
-    public static extend(name: string, func: Function) {
-        if (typeof func !== 'function') {
-            throw new TypeError(`The validator of rule '${name}' must be a function`)
+    public static extend(name: string, validate: Function) {
+        if (typeof validate !== 'function') {
+            throw new TypeError(`The rule [${name}] must be a function`)
         }
 
-        RULES[name] = func
+        RULES[name] = validate
     }
 
-    constructor(data: Collection<any>, rules: Collection<string|string[]>, messages: Messages = {}, attributes: Collection<string> = {}) {
-        const store = createStore(reducer)
-        this._store = store
+    constructor(data: Items, rules: Items<string|string[]>, customLocale: any = {}) {
+        this._store = createStore<IState>(reducer, applyMiddleware(store => next => action => {
+            const result = next(action)
 
-        this._errors = createErrorBag(store)
-        store.dispatch(updateData(this._parseData(data)))
+            this._listeners.forEach(listener => listener(action.type))
 
+            return result
+        }))
+
+        this._store.dispatch(setData(data || {}))
         this.setRules(rules)
-        this._RULES = { ...defaultRules }
-        this._translator = new Translator(LOCALE, messages, attributes)
+
+        this._errors = new ErrorBag(this._store)
+        this._translator = new Translator({
+            ...LOCALE,
+            customMessages: customLocale.messages || {},
+            customAttributes: customLocale.attributes || {},
+        }, this)
     }
 
-    get errors(): ErrorBagInterface {
+    get errors(): ErrorBag {
         return this._errors
     }
 
-    public passes(name?: string): Promise<boolean> {
-        this._store.dispatch(startValidate())
+    public isValidating(attribute?: string): boolean {
+        const { validating } = this._store.getState()
+
+        if (attribute) {
+            return Boolean(validating[attribute])
+        }
+
+        return Object.keys(validating).some(key => validating[key])
+    }
+
+    public validateAll(): Promise<boolean> {
+        const { rules } = this._store.getState()
+        const attributes = Object.keys(rules)
+
+        this.errors.clear()
+
         const promises: Promise<boolean>[] = []
-        const attributes = this._filterAttributes(name)
 
-        if (name && attributes.length === 0) {
-            this._store.dispatch(stopValidate())
-            return Promise.reject(new Error(`Validating a non-existent attribute: "${name}".`))
-        }
-
-        let queues = []
         for (let attribute of attributes) {
-            if (!this._passesOptionalCheck(attribute)) {
-                continue
-            }
-
-            this.errors.remove(attribute)
-            let queue = []
-
-            for (let rule of this._rules[attribute]) {
-                queue.push(((attribute, rule) => {
-                    return (result: boolean): boolean|Promise<boolean> => {
-                        if (result === true) {
-                            return this._validateAttribute(attribute, rule)
-                        }
-
-                        return result
-                    }
-                })(attribute, rule))
-
-                queues.push(queue)
-            }
-
-            promises.push(queue.reduce((p, q) => p.then(q), Promise.resolve(true)))
+            promises.push(this.validate(attribute))
         }
 
-        return Promise.all(promises).then(results => results.every(result => result)).then(result => {
-            this._store.dispatch(stopValidate())
-            for (let callback of this._after) {
-                callback()
-            }
+        return Promise.all(promises).then(results => results.every(result => result))
+    }
+
+    public validate(attribute: string): Promise<boolean> {
+        if (this.isValidating(attribute) || !this._passesOptionalCheck(attribute)) {
+            return Promise.resolve(true)
+        }
+
+        this._store.dispatch(startValidate(attribute))
+
+        if (this._errors.has(attribute)) {
+            this._errors.remove(attribute)
+        }
+
+        const { rules } = this._store.getState()
+
+        let queue: ((result: boolean) => boolean|Promise<boolean>)[] = []
+
+        for (let rule of rules[attribute]) {
+            queue.push(((a, r) => {
+                return (result: boolean): boolean|Promise<boolean> => {
+                    if (result === true) {
+                        return this._validateRule(a, r)
+                    }
+
+                    return result
+                }
+            })(attribute, rule))
+        }
+
+        return queue.reduce((promise, queueFn) => promise.then(queueFn), Promise.resolve(true)).then(result => {
+            this._store.dispatch(stopValidate(attribute))
 
             return result
         })
     }
 
-    public setData(data: Collection<any>): this {
-        this._store.dispatch(updateData(this._parseData(data)))
-        this.setRules(this._initialRules)
+    public setData(data: Items<any>): this {
+        const { initialRules } = this._store.getState()
+
+        this._store.dispatch(setData(data || {}))
+        this.setRules(initialRules)
 
         return this
     }
 
-    public getData(): Collection<any> {
+    public getData(): Items<any> {
         const { data } = this._store.getState()
 
-        return { ...data }
+        return data
     }
 
-    public setRules(rules: Collection<string|string[]>): this {
-        this._initialRules = rules
-        this._rules = {}
+    public getValue(attribute: string, defaultValue?: any): any {
+        const { data } = this._store.getState()
 
-        this.addRules(rules)
+        return utils.get(data, attribute, defaultValue)
+    }
+
+    public setRules(rules: Items<string|string[]>): this {
+        const { data } = this._store.getState()
+
+        this._store.dispatch(setRules(data, rules || {}))
 
         return this
     }
 
-    public addRules(rules: Collection<string|string[]>): this {
-        const { data } = this._store.getState()
+    public addRules(rules: Items<string|string[]>): this {
+        const { initialRules } = this._store.getState()
 
-        this._initialRules = deepmerge(this._initialRules || {}, rules)
-
-        const response = (new ValidationRuleParser(data)).parse(this._initialRules)
-
-        this._rules = response.rules,
-        this._implicitAttributes = response.implicitAttributes
+        this.setRules(deepmerge(initialRules, rules))
 
         return this
     }
 
-    public getRules(): Collection<Rule[]> {
-        return this._rules
-    }
+    public getRules(): Items<Rule[]> {
+        const { rules } = this._store.getState()
 
-    public hasRule(attribute: string, rules: string|string[]): boolean {
-        return this.getRule(attribute, rules) !== null
-    }
-
-    public getRule(attribute: string, rules: string|string[]): Rule|null {
-        if (! (attribute in this._rules)) {
-            return null
-        }
-
-        if (typeof rules === 'string') {
-            rules = [rules]
-        }
-
-        for (let rule of this._rules[attribute]) {
-            const { name } = rule
-
-            if (rules.indexOf(name) > -1) {
-                return rule
-            }
-        }
-
-        return null
-    }
-
-    public getValue(attribute: string): any {
-        const { data } = this._store.getState()
-
-        return dataGet(data, attribute)
+        return rules
     }
 
     public getPrimaryAttribute(attribute: string): string {
-        for (let unparsed of Object.keys(this._implicitAttributes)) {
-            if (this._implicitAttributes[unparsed].indexOf(attribute) > -1) {
+        const { implicitAttributes } = this._store.getState()
+
+        for (let unparsed of Object.keys(implicitAttributes)) {
+            if (implicitAttributes[unparsed].indexOf(attribute) > -1) {
                 return unparsed
             }
         }
@@ -208,14 +173,65 @@ export default class Validator implements ValidatorInterface {
         return attribute
     }
 
-    public extend(name: string, func: Function): this {
-        if (typeof func !== 'function') {
-            throw new TypeError(`The validator of rule '${name}' must be a function`)
+    public subscribe(listener: Function): Function {
+        if (typeof listener !== 'function') {
+            throw new Error('Expected listener to be a function.')
+        }
+        let isListener = true
+        this._listeners.push(listener)
+
+        return () => {
+            if (isListener === false) {
+                return
+            }
+
+            isListener = false
+
+            const index = this._listeners.indexOf(listener)
+            this._listeners.splice(index, 1)
+        }
+    }
+
+    public getRule(attribute: string, target: string|string[]): Rule|null {
+        const { rules } = this._store.getState()
+
+        if (! (attribute in rules)) {
+            return null
         }
 
-        this._RULES[name] = func
+        if (typeof target === 'string') {
+            target = [target]
+        }
+
+        for (let rule of rules[attribute]) {
+            const { name } = rule
+
+            if (target.indexOf(name) > -1) {
+                return rule
+            }
+        }
+
+        return null
+    }
+
+    public hasRule(attribute: string, target: string|string[]): boolean {
+        return this.getRule(attribute, target) !== null
+    }
+
+    public extend(name: string, validate: Function): this {
+        if (typeof validate !== 'function') {
+            throw new TypeError(`The rule [${name}] must be a function`)
+        }
+
+        this._rules[name] = validate
 
         return this
+    }
+
+    public getImplicitAttributes(): Items<string[]> {
+        const { implicitAttributes } = this._store.getState()
+
+        return implicitAttributes
     }
 
     public setCustomMessages(messages?: Messages): this {
@@ -230,179 +246,37 @@ export default class Validator implements ValidatorInterface {
         return this
     }
 
-    public setAttributeNames(attributes?: Collection<string>): this {
+    public setAttributeNames(attributes?: Items<string>): this {
         this._translator.setCustomAttributes(attributes)
 
         return this
     }
 
-    public addAttributeNames(attributes?: Collection<string>): this {
+    public addAttributeNames(attributes?: Items<string>): this {
         this._translator.addCustomAttributes(attributes)
 
         return this
     }
 
-    public after(callback: Function): this {
-        this._after.push(() => {
-            callback(this)
-        })
-
-        return this
-    }
-
-    /**
-     * Private methods
-     */
-    protected _filterAttributes(name?: string): string[] {
-        let attributes = Object.keys(this._rules)
-
-        if (typeof name === 'string' && name.length > 0) {
-            if (name.indexOf('*') > -1) {
-                const regex = new RegExp(`^${escapeString(name).replace(/\\\*/g, '([^\.]+)')}$`)
-
-                attributes = attributes.filter(attr => regex.test(attr))
-            } else {
-                attributes = attributes.filter(attr => attr === name)
-            }
-        }
-
-        return attributes
-    }
-
-    protected _validateAttribute(attribute: string, rule: Rule): Promise<boolean> {
-        let { name, parameters } = rule
+    protected _validateRule(attribute: string, rule: Rule): Promise<boolean> {
         const value = this.getValue(attribute)
+        const { name } = rule
+        const parameters = this._replaceAsterisksInParameters(rule, attribute)
 
-        const keys = this._getExplicitKeys(attribute)
-
-        if (keys.length && dependentRules.indexOf(name) > -1) {
-            parameters = this._replaceAsterisksInParameters(parameters, keys)
-        }
-
-        const validate = RULES[name]
+        const validate = this._rules[name] || RULES[name]
 
         if (validate) {
-            const promise = Promise.resolve(validate(attribute, value, parameters, this))
-
-            promise.then(valid => {
-                if (!valid) {
-                    this._addFailure(name, attribute, value, parameters)
+            return Promise.resolve(validate(attribute, value, parameters, this)).then(result => {
+                if (result === false) {
+                    const message = this._translator.getMessage(name, attribute, value, parameters)
+                    this._errors.add(attribute, message)
                 }
 
-                return valid
+                return result
             })
-
-            return promise
         }
 
-        return Promise.reject(new Error(`The ${name} rule is not defined`))
-    }
-
-    protected _parseData(data: any): any {
-        let newData: any
-
-        if (Array.isArray(data)) {
-            newData = []
-
-            data.forEach(value => newData.push(this._parseData(value)))
-        } else if (Object.prototype.toString.call(data) === '[object Object]') {
-            newData = {}
-
-            Object.keys(data).forEach(key => {
-                let value = data[key]
-
-                if (typeof value === 'object' && value !== null) {
-                    value = this._parseData(value)
-                }
-
-                if (key.indexOf('.') > -1) {
-                    dataSet(newData, key, value)
-                } else if (key in newData) {
-                    newData[key] = {
-                        ...newData[key],
-                        ...value,
-                    }
-                } else {
-                    newData[key] = value
-                }
-            })
-        } else {
-            return data
-        }
-
-        return newData
-    }
-
-    protected _getExplicitKeys(attribute: string): string[] {
-        const pattern = escapeString(this.getPrimaryAttribute(attribute))
-            .replace(/\\\*/g, '([^\.]+)')
-        const regex = new RegExp(`^${pattern}`)
-        const match = regex.exec(attribute)
-
-        if (match) {
-            match.shift()
-
-            return match.slice(0)
-        }
-
-        return []
-    }
-
-    protected _replaceAsterisksInParameters(parameters: string[], keys: string[]): string[] {
-        return parameters.map(field => {
-            keys.forEach(key => {
-                field = field.replace('*', key)
-            })
-
-            return field
-        })
-    }
-
-    protected _addFailure(rule: string, attribute: string, value: any, parameters: any[]) {
-        parameters = this._getDisplayableParameters(rule, parameters)
-
-        const message = this._translator.getMessage(
-            rule, this._getDisplayableAttribute(attribute), value, parameters, this._getAttributeType(attribute),
-        )
-
-        this._errors.add(attribute, message)
-    }
-
-    protected _getDisplayableAttribute(attribute: string): string {
-        const primaryAttribute = this.getPrimaryAttribute(attribute)
-        const expectedAttributes = attribute !== primaryAttribute ? [attribute, primaryAttribute] : [attribute]
-
-        for (let name of expectedAttributes) {
-            const line = this._translator.getAttribute(name)
-
-            if (line !== null) {
-                return line
-            }
-        }
-
-        if (primaryAttribute in this._implicitAttributes) {
-            return attribute
-        }
-
-        return String(attribute).toLowerCase().replace(/_/g, ' ')
-    }
-
-    protected _getDisplayableParameters(rule: string, parameters: any[]): any[] {
-        if (dependentRules.indexOf(rule) > -1) {
-            return parameters.map(parameter => this._getDisplayableAttribute(parameter))
-        }
-
-        return parameters
-    }
-
-    protected _getAttributeType(attribute: string): string {
-        if (this.hasRule(attribute, ['numeric', 'integer'])) {
-            return 'numeric'
-        } else if (this.hasRule(attribute, ['array'])) {
-            return 'array'
-        }
-
-        return 'string'
+        return Promise.reject(new Error(`The rule [${name}] does not exist`))
     }
 
     protected _passesOptionalCheck(attribute: string): boolean {
@@ -410,8 +284,36 @@ export default class Validator implements ValidatorInterface {
             return true
         }
 
-        const { data } = this._store.getState()
+        return this.getValue(attribute, '__MISSING__') !== '__MISSING__'
+    }
 
-        return dataGet(data, attribute, '__MISSING__') !== '__MISSING__'
+    protected _replaceAsterisksInParameters(rule: Rule, attribute: string): any[] {
+        const { name, parameters } = rule
+
+        if (DEPENDENT_RULES.indexOf(name) === -1) {
+            return parameters
+        }
+
+        const pattern = utils.escape(this.getPrimaryAttribute(attribute)).replace(/\\\*/g, '([^\.]+)')
+        const regex = new RegExp(`^${pattern}`)
+        const match = regex.exec(attribute)
+
+        if (match) {
+            match.shift()
+
+            const keys = match.slice(0)
+
+            return parameters.map(field => {
+                if (typeof field === 'string') {
+                    keys.forEach(key => {
+                        field = field.replace('*', key)
+                    })
+                }
+
+                return field
+            })
+        }
+
+        return parameters
     }
 }

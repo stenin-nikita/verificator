@@ -1,4 +1,4 @@
-import required from '../rules/required'
+import required from '../required'
 
 const anyFailingRequired = (attributes: string[], validator: any): boolean => {
     for (let key of attributes) {

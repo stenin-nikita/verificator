@@ -1,7 +1,7 @@
 import Validator from '../src/Validator'
 
 const validator = (data: any, rules: any): Promise<boolean> => {
-    return new Validator(data, rules).passes()
+    return new Validator(data, rules).validateAll()
 }
 
 test('empty rules skipped', () => {
@@ -1562,7 +1562,7 @@ test('validate implicit each with asterisks confirmed', () => {
         ]}, {'foo.*.bar.*.password': 'confirmed'}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1604,7 +1604,7 @@ test('validate implicit each with asterisks different', () => {
         ]}, {'foo.*.bar.*.name': ['different:foo.*.bar.*.last']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1646,7 +1646,7 @@ test('validate implicit each with asterisks same', () => {
         ]}, {'foo.*.bar.*.name': ['same:foo.*.bar.*.last']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1686,7 +1686,7 @@ test('validate implicit each with asterisks required', () => {
         ]}, {'foo.*.bar.*.name': ['required']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1726,7 +1726,7 @@ test('validate implicit each with asterisks required_if', () => {
         ]}, {'foo.*.bar.*.name': ['required_if:foo.*.bar.*.last,foo']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1766,7 +1766,7 @@ test('validate implicit each with asterisks required_unless', () => {
         ]}, {'foo.*.bar.*.name': ['required_unless:foo.*.bar.*.last,foo']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1810,7 +1810,7 @@ test('validate implicit each with asterisks required_with', () => {
         ]}, {'foo.*.bar.*.name': ['required_with:foo.*.bar.*.last']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1851,7 +1851,7 @@ test('validate implicit each with asterisks required_with_all', () => {
         ]}, {'foo.*.bar.*.name': ['required_with_all:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
     
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1891,7 +1891,7 @@ test('validate implicit each with asterisks required_without', () => {
         ]}, {'foo.*.bar.*.name': ['required_without:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1933,7 +1933,7 @@ test('validate implicit each with asterisks required_without_all', () => {
         ]}, {'foo.*.bar.*.name': ['required_without_all:foo.*.bar.*.last,foo.*.bar.*.middle']}),
     ]
 
-    const promises = validators.map(validator => validator.passes())
+    const promises = validators.map(validator => validator.validateAll())
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
@@ -1965,8 +1965,8 @@ test('validate implicit each with asterisks before and after', () => {
 
 test('validate using setters with implicit rules', () => {
     const promises = [
-        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setData({'foo': ['a', 'b', 'c', 4]}).passes(),
-        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setRules({'foo.*': 'integer'}).passes(),
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setData({'foo': ['a', 'b', 'c', 4]}).validateAll(),
+        new Validator({'foo': ['a', 'b', 'c']}, {'foo.*': 'string'}).setRules({'foo.*': 'integer'}).validateAll(),
     ]
 
     return Promise.all(promises).then(result => {

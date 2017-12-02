@@ -33,7 +33,7 @@ npm install --save verificator
 <script>
 var locale = VerificatorLocale.en
 
-Verificator.Validator.setLocale(locale)
+Verificator.Validator.useLocale(locale)
 var validator = new Verificator.Validator(data, rules)
 </script>
 ```
@@ -44,7 +44,7 @@ var validator = new Verificator.Validator(data, rules)
 const Verificator = require('verificator')
 const locale = require('verificator/lib/locale/en')
 
-Verificator.Validator.setLocale(locale)
+Verificator.Validator.useLocale(locale)
 const validator = new Verificator.Validator(data, rules)
 ```
 
@@ -54,7 +54,7 @@ const validator = new Verificator.Validator(data, rules)
 import { Validator } from 'verificator/es'
 import * as locale from 'verificator/es/locale/en'
 
-Validator.setLocale(locale)
+Validator.useLocale(locale)
 const validator = new Validator(data, rules)
 ```
 
@@ -64,7 +64,7 @@ const validator = new Validator(data, rules)
 import { Validator } from 'verificator/es'
 import * as locale from 'verificator/es/locale/en'
 
-Validator.setLocale(locale)
+Validator.useLocale(locale)
 
 const data = {
     firstName: 'Nikita',
@@ -80,13 +80,17 @@ const rules = {
 
 const validator = new Validator(data, rules)
 
-validator.passes().then(isValid => {
+validator.validateAll().then(isValid => {
     if (isValid) {
         console.log('succes')
     } else {
         console.log(validator.errors.all())
     }
 })
+// or
+validator.validate('firstName').then(isValid => {})
+validator.validate('lastName').then(isValid => {})
+validator.validate('email').then(isValid => {})
 ```
 
 ## License

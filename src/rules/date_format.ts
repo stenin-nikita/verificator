@@ -1,4 +1,4 @@
-import requireParameterCount from '../helpers/requireParameterCount'
+import requireParameterCount from './helpers/requireParameterCount'
 import parseDate from 'date-fns/parse'
 import formatDate from 'date-fns/format'
 

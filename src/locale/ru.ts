@@ -1,5 +1,3 @@
-export const name = 'ru'
-
 export const messages = {
     accepted: ({ attribute }: any) => `Вы должны принять ${attribute}.`,
     after: ({ attribute, parameters: [ date ] }: any) => `В поле ${attribute} должна быть дата после ${date}.`,

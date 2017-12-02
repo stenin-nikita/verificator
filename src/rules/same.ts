@@ -1,4 +1,4 @@
-import requireParameterCount from '../helpers/requireParameterCount'
+import requireParameterCount from './helpers/requireParameterCount'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
     requireParameterCount(1, parameters, 'same')

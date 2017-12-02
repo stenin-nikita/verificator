@@ -1,35 +1,8 @@
 import parseDate from 'date-fns/parse'
 import toDate from 'date-fns/toDate'
-import parseTime from '../helpers/parseTime'
-
-const getDateFormat = (attribute: string, validator: any): string|null => {
-    let rule = validator.getRule(attribute, 'date_format')
-
-    if (rule) {
-        const { parameters: [ format ] } = rule
-
-        return typeof format === 'string' && format ? format : null
-    }
-
-    return null
-}
-
-const compare = (first: number, second: number, operator: string) => {
-    switch (operator) {
-        case '<':
-            return first < second
-        case '>':
-            return first > second
-        case '<=':
-            return first <= second
-        case '>=':
-            return first >= second
-        case '=':
-            return first === second
-        default:
-            throw new TypeError()
-    }
-}
+import getDateFormat from './getDateFormat'
+import parseTime from './parseTime'
+import compare from './compare'
 
 const compareDates = (attribute: string, value: any, [ date ]: any[], operator: string, validator: any): boolean => {
     if (value instanceof Date || typeof value === 'string' || typeof value === 'number') {

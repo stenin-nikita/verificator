@@ -1,12 +1,14 @@
+import { setData } from './data'
 import { addError, removeError, clearErrors } from './errors'
-import { updateData } from './data'
+import { setRules } from './rules'
 import { startValidate, stopValidate } from './state'
 
 export {
+    setData,
     addError,
     removeError,
     clearErrors,
-    updateData,
+    setRules,
     startValidate,
     stopValidate,
 }

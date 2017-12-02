@@ -1,5 +1,3 @@
-export const name = 'en'
-
 export const messages = {
     accepted: ({ attribute }: any) => `The ${attribute} must be accepted.`,
     after: ({ attribute, parameters: [ date ] }: any) => `The ${attribute} must be a date after ${date}.`,

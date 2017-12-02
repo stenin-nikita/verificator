@@ -45,6 +45,7 @@ import size from './size'
 import sometimes from './sometimes'
 import string from './string'
 import url from './url'
+
 const rules: any = {
     accepted,
     after_or_equal,

@@ -1,4 +1,4 @@
-import isNumeric from '../helpers/isNumeric'
+import isNumeric from './isNumeric'
 
 const getSize = (attribute: string, value: any, validator: any): number => {
     const hasNumeric = validator.hasRule(attribute, ['numeric', 'integer'])

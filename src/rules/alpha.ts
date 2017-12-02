@@ -1,12 +1,12 @@
-import { alpha } from '../helpers/alpha'
+import { ALPHA } from '../constants'
 
 const validate = (attribute: string, value: any, [ locale ]: any[], validator: any): boolean => {
     // Match at least one locale.
     if (! locale) {
-        return Object.keys(alpha).some(loc => alpha[loc].test(value))
+        return Object.keys(ALPHA).some(loc => ALPHA[loc].test(value))
     }
 
-    return (alpha[locale] || alpha.en).test(value)
+    return (ALPHA[locale] || ALPHA.en).test(value)
 }
 
 export default validate

@@ -1,16 +1,15 @@
-import { ActionTypes } from '../constants'
+import { ADD_ERROR, REMOVE_ERROR, CLEAR_ERRORS } from '../constants/types'
 
 export const addError = (key: string, message: string) => ({
-    type: ActionTypes.ADD_ERROR,
+    type: ADD_ERROR,
     payload: { key, message },
 })
 
 export const removeError = (key: string) => ({
-    type: ActionTypes.REMOVE_ERROR,
+    type: REMOVE_ERROR,
     payload: { key },
 })
 
 export const clearErrors = () => ({
-    type: ActionTypes.CLEAR_ERRORS,
-    payload: {},
+    type: CLEAR_ERRORS,
 })

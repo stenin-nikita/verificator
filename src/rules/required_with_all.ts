@@ -1,4 +1,4 @@
-import { anyFailingRequired } from '../helpers/failingRequired'
+import { anyFailingRequired } from './helpers/failingRequired'
 import required from './required'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {

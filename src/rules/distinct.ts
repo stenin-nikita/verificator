@@ -1,13 +1,12 @@
-import escapeString from '../helpers/escapeString'
-import flattenData from '../helpers/flattenData'
+import * as utils from '../utils'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
     const data: any[] = []
 
     const attributeName = validator.getPrimaryAttribute(attribute)
     const path = attributeName.split('*')[0].replace(/^\.|\.$/g, '') || null
-    const attributeData: any = flattenData(validator.getValue(path))
-    const attributeNameRegex = new RegExp(`^${escapeString(attributeName).replace(/\\\*/g, '([^\.]+)')}`, 'u')
+    const attributeData: any = utils.flatten(validator.getValue(path))
+    const attributeNameRegex = new RegExp(`^${utils.escape(attributeName).replace(/\\\*/g, '([^\.]+)')}`, 'u')
 
     Object.keys(attributeData).forEach(k => {
         const key = `${path}.${k}`
@@ -18,7 +17,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     })
 
     if (parameters.indexOf('ignore_case') > -1) {
-        const regex = new RegExp(`${escapeString(value)}`, 'iu')
+        const regex = new RegExp(`${utils.escape(value)}`, 'iu')
 
         return data.filter(val => {
             return regex.test(val)
