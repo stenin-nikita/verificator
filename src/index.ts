@@ -1,7 +1,7 @@
 import Validator from './Validator'
-export * from './types'
 import * as rules from './rules'
 
+export * from './types'
 export {
     Validator,
     rules,

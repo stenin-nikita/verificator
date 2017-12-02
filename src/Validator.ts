@@ -115,6 +115,9 @@ export default class Validator {
             this._store.dispatch(stopValidate(attribute))
 
             return result
+        }).catch(e => {
+            this._store.dispatch(stopValidate(attribute))
+            return e
         })
     }
 
