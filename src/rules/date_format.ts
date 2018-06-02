@@ -1,6 +1,7 @@
 import requireParameterCount from './helpers/requireParameterCount'
 import parseDate from 'date-fns/parse'
 import formatDate from 'date-fns/format'
+import isEqual from 'date-fns/isEqual'
 
 const validate = (attribute: string, value: any, parameters: any[], validator: any): boolean => {
     requireParameterCount(1, parameters, 'date_format')
@@ -12,7 +13,7 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
     const [ format ] = parameters
     const date = parseDate(String(value), String(format), new Date())
 
-    return date && formatDate(date, format) === value
+    return date && (formatDate(date, format) === value || isEqual(formatDate(date, format), value))
 }
 
 export default validate

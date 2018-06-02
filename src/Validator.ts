@@ -36,7 +36,7 @@ export default class Validator {
     }
 
     constructor(data: Items, rules: Items<string|string[]>, customLocale: any = {}) {
-        this._store = createStore<IState>(reducer, applyMiddleware(store => next => action => {
+        this._store = createStore(reducer, applyMiddleware(store => next => action => {
             const result = next(action)
 
             this._listeners.forEach(listener => listener(action.type))

@@ -1,6 +1,6 @@
-import Validator from '../src/Validator'
+import { Validator, Items } from '../src'
 
-const validator = (data: any, rules: any): Promise<boolean> => {
+const validator = (data: Items, rules: Items<string|string[]|any[]>): Promise<boolean> => {
     return new Validator(data, rules).validateAll()
 }
 
@@ -969,29 +969,31 @@ test('validate date and date_format', () => {
         validator({'x': '17:43:59'}, {'x': 'date_format:HH:mm:ss'}),
         validator({'x': '17:43:59'}, {'x': 'date_format:HH:mm'}),
         validator({'x': '17:43'}, {'x': 'date_format:HH:mm'}),
+        validator({'x': 1325376000}, {'x': 'date'}),
     ]
 
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(true)
-        expect(result[1]).toBe(true)
+        expect(result[1]).toBe(true) // true
         expect(result[2]).toBe(false)
         expect(result[3]).toBe(false)
         expect(result[4]).toBe(false)
         expect(result[5]).toBe(true)
-        expect(result[6]).toBe(true)
+        expect(result[6]).toBe(true) // true
         expect(result[7]).toBe(false)
         expect(result[8]).toBe(false)
         expect(result[9]).toBe(false)
         expect(result[10]).toBe(false)
-        expect(result[11]).toBe(true)
-        expect(result[12]).toBe(true)
-        expect(result[13]).toBe(true)
-        expect(result[14]).toBe(true)
-        expect(result[15]).toBe(true)
+        expect(result[11]).toBe(true) // true
+        expect(result[12]).toBe(true) // true
+        expect(result[13]).toBe(true) // true
+        expect(result[14]).toBe(true) // true
+        expect(result[15]).toBe(true) // true
         expect(result[16]).toBe(false)
         expect(result[17]).toBe(true)
         expect(result[18]).toBe(false)
         expect(result[19]).toBe(true)
+        expect(result[20]).toBe(true)
     })
 })
 
@@ -1116,16 +1118,16 @@ test('validate before and after with format', () => {
     return Promise.all(promises).then(result => {
         expect(result[0]).toBe(false)
         expect(result[1]).toBe(false)
-        expect(result[2]).toBe(true)
+        expect(result[2]).toBe(true) // true
         expect(result[3]).toBe(false)
         expect(result[4]).toBe(false)
-        expect(result[5]).toBe(true)
+        expect(result[5]).toBe(true) // true
         expect(result[6]).toBe(false)
-        expect(result[7]).toBe(true)
+        expect(result[7]).toBe(true) // true
         expect(result[8]).toBe(false)
         expect(result[9]).toBe(false)
         expect(result[10]).toBe(false)
-        expect(result[11]).toBe(true)
+        expect(result[11]).toBe(true) // true
         expect(result[12]).toBe(false)
         expect(result[13]).toBe(false)
         expect(result[14]).toBe(false)

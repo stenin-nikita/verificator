@@ -5,11 +5,13 @@ const validate = (attribute: string, value: any, parameters: any[], validator: a
         return true
     }
 
-    if (typeof value !== 'string' && typeof value !== 'number' || !isValid(value)) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
         return false
     }
 
-    return true
+    const date = new Date(value)
+
+    return !isNaN(Number(date)) || isValid(value)
 }
 
 export default validate

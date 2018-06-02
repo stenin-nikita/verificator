@@ -3,7 +3,7 @@ import path from 'path'
 import commonjs from 'rollup-plugin-commonjs'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
-import uglify from 'rollup-plugin-uglify'
+import { uglify } from 'rollup-plugin-uglify'
 
 const localesDir = path.join(__dirname, 'es/locale')
 const files = fs.readdirSync(localesDir)
