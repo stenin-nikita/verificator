@@ -25,6 +25,11 @@ export interface Locale {
     customAttributes?: Items<string>
 }
 
+export interface CustomLocale {
+    messages?: Messages,
+    attributes?: Items<string>
+}
+
 export interface DataState extends Items {}
 export interface ErrorsState extends Items<string[]> {}
 export interface ImplicitAttributesState extends Items<string[]> {}

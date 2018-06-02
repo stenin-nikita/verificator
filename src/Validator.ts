@@ -7,7 +7,7 @@ import { createStore, applyMiddleware, Store } from 'redux'
 import ErrorBag from './ErrorBag'
 import Translator from './Translator'
 import * as utils from './utils'
-import { IState, Rule, Items, Locale, Messages } from './types'
+import { IState, Rule, Items, Locale, Messages, CustomLocale } from './types'
 
 let RULES = DEFAULT_RULES
 let LOCALE = DEFAULT_LOCALE
@@ -35,7 +35,7 @@ export default class Validator {
         RULES[name] = validate
     }
 
-    constructor(data: Items, rules: Items<string|string[]>, customLocale: any = {}) {
+    constructor(data: Items, rules: Items<string|string[]>, customLocale: CustomLocale = {}) {
         this._store = createStore(reducer, applyMiddleware(store => next => action => {
             const result = next(action)
 

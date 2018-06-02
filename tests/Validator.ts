@@ -62,3 +62,28 @@ test('test Validator primary attribute', () => {
         ]
     })
 })
+
+test('test Validator with custom attributes', () => {
+    const validator = new Validator({
+        'foo': null,
+        'bar': null
+    }, {
+        'foo': 'required',
+        'bar': 'required',
+    }, {
+        messages: {
+            'required': ({ attribute }) => `Required ${attribute}`,
+            'bar.required': ({ attribute }) => `Bar required ${attribute}`
+        },
+        attributes: {
+            'foo': 'foo-custom',
+            'bar': 'bar-custom'
+        }
+    })
+
+    return validator.validateAll().then(result => {
+        expect(validator.errors.all()).toEqual(['Required foo-custom', 'Bar required bar-custom'])
+        expect(validator.errors.first('foo')).toEqual('Required foo-custom')
+        expect(validator.errors.first('bar')).toEqual('Bar required bar-custom')
+    })
+})

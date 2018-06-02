@@ -45,12 +45,13 @@ export default class Translator {
 
     public getMessage(rule: string, attribute: string, value: any, parameters: any[]): string {
         const { _messages, _customMessages } = this
+        const rawAttribute = attribute
 
         attribute = this._getDisplayableAttribute(attribute)
         parameters = this._getDisplayableParameters(rule, parameters)
 
         for (let source of [_customMessages, _messages]) {
-            let message = this._findMessage(source, { rule, attribute, value, parameters })
+            let message = this._findMessage(source, rawAttribute, { rule, attribute, value, parameters })
 
             if (message !== null) {
                 return message
@@ -90,12 +91,12 @@ export default class Translator {
         return this
     }
 
-    protected _findMessage(source: Items<string|Function>, parameters: MessageParameters): string|null {
-        const type = this._getAttributeType(parameters.attribute)
+    protected _findMessage(source: Items<string|Function>, attribute: string, parameters: MessageParameters): string|null {
+        const type = this._getAttributeType(attribute)
 
         const keys = [
-            `${parameters.attribute}.${parameters.rule}:${type}`,
-            `${parameters.attribute}.${parameters.rule}`,
+            `${attribute}.${parameters.rule}:${type}`,
+            `${attribute}.${parameters.rule}`,
             `${parameters.rule}:${type}`,
             parameters.rule,
         ]
